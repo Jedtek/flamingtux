@@ -125,8 +125,7 @@
     <property name="width_request">400</property>
     <property name="height_request">500</property>
     <property name="title" translatable="yes">Fire4Lin BETA</property>
-    <property name="resizable">False</property>
-    <property name="default_width">404</property>
+    <property name="default_width">300</property>
     <property name="default_height">500</property>
     <property name="icon">fire4lin_icon.png</property>
     <child>
@@ -241,6 +240,8 @@ In-Game</property>
           <widget class="GtkScrolledWindow" id="scrolledwindow2">
             <property name="visible">True</property>
             <property name="can_focus">True</property>
+            <property name="hscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
+            <property name="vscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
             <property name="shadow_type">GTK_SHADOW_IN</property>
             <child>
               <widget class="GtkTreeView" id="BuddyView">
@@ -255,6 +256,7 @@ In-Game</property>
         </child>
         <child>
           <widget class="GtkImage" id="logo_">
+            <property name="height_request">143</property>
             <property name="visible">True</property>
             <property name="pixbuf">fire4lin_logo.png</property>
           </widget>
