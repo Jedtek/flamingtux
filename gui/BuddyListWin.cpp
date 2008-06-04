@@ -82,6 +82,14 @@ void BuddyListWin::createTreeModel() {
 	buddyview_->set_has_tooltip();
 	buddyview_->signal_query_tooltip().connect(sigc::mem_fun(*this, &BuddyListWin::onQueryTooltip));
 	
+	Gtk::CellRendererText& nickname_renderer = *manage (new Gtk::CellRendererText());
+	Gtk::TreeViewColumn& nickname_column = *manage (new Gtk::TreeViewColumn ("Nickname", nickname_renderer));
+
+	nickname_column.add_attribute(nickname_renderer.property_markup(), m_Columns.m_col_nickname_rendered);
+	//name_column.add_attribute (name_renderer.property_weight (),_category_columns._name_weight);
+
+	buddyview_->append_column(nickname_column); 
+	
 	//buddyview_->set_reorderable();
 	
 	// Fill the TreeView's model
@@ -92,7 +100,7 @@ void BuddyListWin::createTreeModel() {
 // 	offline_row[m_Columns.m_col_name] = "Offline";
 // 	offline_row[m_Columns.m_col_id] = 1;
 	// Add the TreeView's view columns
-	buddyview_->append_column("Nickname", m_Columns.m_col_nickname);
+	//buddyview_->append_column("Nickname", m_Columns.m_col_nickname);
 	buddyview_->set_headers_visible(FALSE);
 }
 
@@ -100,10 +108,14 @@ void BuddyListWin::addBuddyToTree(int id, Glib::ustring username, Glib::ustring 
 	Gtk::TreeModel::Row childrow;
 	if (status == ONLINE) {
 		childrow = *(buddystore_->append(online_row.children()));
-		if (nickname == "")
-			childrow[m_Columns.m_col_nickname] = "<" + username + ">";
-		else
+		if (nickname == "") {
+			childrow[m_Columns.m_col_nickname_rendered] = "<span color='Dark Green'>[" + username + "]</span>";
+			childrow[m_Columns.m_col_nickname] = "[" + username + "]";
+		}
+		else {
+			childrow[m_Columns.m_col_nickname_rendered] = "<span color='Dark Green'>" + nickname + "</span>";
 			childrow[m_Columns.m_col_nickname] = nickname;
+		}
 		childrow[m_Columns.m_col_username] = username;
 		if (statusmsg == "")
 			childrow[m_Columns.m_col_status] = "Online";
@@ -113,10 +125,14 @@ void BuddyListWin::addBuddyToTree(int id, Glib::ustring username, Glib::ustring 
 	}
 	else if (status == OFFLINE) {
 		childrow = *(buddystore_->append(offline_row.children()));
-		if (nickname == "")
+		if (nickname == "") {
+			childrow[m_Columns.m_col_nickname_rendered] = "<span color='Dark Blue'>[" + username + "]</span>";
 			childrow[m_Columns.m_col_nickname] = "[" + username + "]";
-		else
+		}
+		else {
+			childrow[m_Columns.m_col_nickname_rendered] = "<span color='Dark Blue'>" + nickname + "</span>";
 			childrow[m_Columns.m_col_nickname] = nickname;
+		}
 		childrow[m_Columns.m_col_username] = username;
 		childrow[m_Columns.m_col_status] = "Offline";
 		childrow[m_Columns.m_col_id] = id;
@@ -145,17 +161,16 @@ bool BuddyListWin::onQueryTooltip(int x, int y, bool keyboard_tooltip, const Gli
 }
 
 void BuddyListWin::eventUpdateBuddyList() {
+	vector<BuddyListEntry*> *entries = client_->getClient()->getBuddyList()->getEntries();
+	int noOfOnlineEntries = 0;
 	buddystore_->clear();
 	// Fill the TreeView's model
 	online_row = *(buddystore_->append());
 	//buddyview_->set_tooltip_text("lalala");
-	online_row[m_Columns.m_col_nickname] = "Online";
 	online_row[m_Columns.m_col_id] = 0;
 	offline_row = *(buddystore_->append());
-	offline_row[m_Columns.m_col_nickname] = "Offline";
 	offline_row[m_Columns.m_col_id] = 1;
 	
-	vector<BuddyListEntry*> *entries = client_->getClient()->getBuddyList()->getEntries();
 	for(uint i = 0 ; i < entries->size() ; i ++) {
 		BuddyListEntry *entry = entries->at(i);
 // 		printf("%1s %20s | %20s | %10ld | %20s | %7ld | %ld\n",
@@ -166,11 +181,15 @@ void BuddyListWin::eventUpdateBuddyList() {
 // 	     entry->statusmsg.c_str(),
 // 				    entry->game,
 // 	entry->game2);
-		if (entry->isOnline())
+		if (entry->isOnline()) {
 			addBuddyToTree(entry->userid, entry->username, entry->nick, entry->statusmsg, ONLINE);
+			noOfOnlineEntries += 1;
+		}
 		else 
 			addBuddyToTree(entry->userid, entry->username, entry->nick, entry->statusmsg, OFFLINE);
 	}
+	online_row[m_Columns.m_col_nickname_rendered] = "<b>Online (" + stringify(noOfOnlineEntries) + ")</b>";
+	offline_row[m_Columns.m_col_nickname_rendered] = "<b>Offline (" + stringify(entries->size() - noOfOnlineEntries) + ")</b>";
 }
 
 void BuddyListWin::on_event_finish() {
