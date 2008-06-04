@@ -114,7 +114,7 @@ void BuddyListWin::addBuddyToTree(int id, Glib::ustring username, Glib::ustring 
 	else if (status == OFFLINE) {
 		childrow = *(buddystore_->append(offline_row.children()));
 		if (nickname == "")
-			childrow[m_Columns.m_col_nickname] = "<" + username + ">";
+			childrow[m_Columns.m_col_nickname] = "[" + username + "]";
 		else
 			childrow[m_Columns.m_col_nickname] = nickname;
 		childrow[m_Columns.m_col_username] = username;
@@ -134,10 +134,12 @@ bool BuddyListWin::onQueryTooltip(int x, int y, bool keyboard_tooltip, const Gli
 	if (path.to_string() == "0" || path.to_string() == "1")
 		return FALSE;
 	Gtk::TreeModel::iterator iter = buddyview_->get_model()->get_iter(path);
-	Glib::ustring text = (*iter)[m_Columns.m_col_username];
+	Glib::ustring text;
+	text += "<b>" + (*iter)[m_Columns.m_col_nickname] + "</b>\n";
+	text += (*iter)[m_Columns.m_col_username];
 	text += "\nStatus : ";
 	text += (*iter)[m_Columns.m_col_status];
-	tooltip->set_markup("<b>" + text + "</b>");
+	tooltip->set_markup(text);
 	buddyview_->set_tooltip_row(tooltip, path);
 	return TRUE;
 }
