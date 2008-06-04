@@ -1,5 +1,5 @@
 /* Compile instructions:
-g++ $(pkg-config --libs --cflags gtkmm-2.4) $(pkg-config --libs --cflags libglademm-2.4) Main.cpp Application.cpp gui/LoginWin.cpp gui/BuddyListWin.cpp backend/FireClient.cpp backend/BackendEvents.cpp -o main -lxfirelib -lgthread-2.0 -lpthread
+g++ $(pkg-config --libs --cflags gtkmm-2.4) $(pkg-config --libs --cflags libglademm-2.4) Main.cpp Application.cpp gui/LoginWin.cpp gui/BuddyListWin.cpp gui/ConvoWin.cpp backend/FireClient.cpp backend/BackendEvents.cpp -o main -lxfirelib -lgthread-2.0 -lpthread
 */
 
 #include <iostream>
