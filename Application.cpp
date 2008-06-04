@@ -11,20 +11,44 @@
 using namespace std;
 
 Application::Application(string path) 
-	: loginwin_(0), buddylistwin_(0) {
+	: loginWindow(0), buddyListWindow(0), client_(0) {
 	refXml_ = Gnome::Glade::Xml::create(path);
-	client_ = new FireClient();
+	//client_ = new FireClient();
 }
 
 Application::~Application() {
+	if (client_)
+		delete client_;
+	if (loginWindow)
+		delete loginWindow;
+	if (buddyListWindow)
+		delete buddyListWindow;
 }
 
-void Application::getLoginWin() {
+// void Application::createNewClient() {
+// 	if (client_)
+// 		delete client_;
+// 	client_ = new FireClient();
+// 	loginWindow->setClient(client_);	
+// }
+
+// void Application::getLoginWin() {
+// 	client_ = new FireClient();
+// 	loginWindow = new LoginWin(refXml_, this, client_);
+// 	loginWindow->get_window().show();
+// }
+
+void Application::createNewLoginWin() {
+	if (loginWindow)
+		delete loginWindow;
+	if (client_)
+		delete client_;
+	client_ = new FireClient();
 	loginWindow = new LoginWin(refXml_, this, client_);
 	loginWindow->get_window().show();
 }
 
-void Application::getBuddyListWin() {
+void Application::createBuddyListWin() {
 // 	cout << "--------------------------------------------" << endl;
 // 	cout << client_->getUsername() << endl;
 // 	cout << "--------------------------------------------" << endl;

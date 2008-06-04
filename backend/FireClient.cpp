@@ -18,7 +18,6 @@ namespace xfireclient {
 		: username_(username), password_(password) {
 		
 		client_ = new Client();
-		lastInviteRequest_ = NULL;
 		loginStatus_ = 0;
 	}
 	
@@ -26,13 +25,11 @@ namespace xfireclient {
 	: username_(""), password_("") {
 		
 		client_ = new Client();
-		lastInviteRequest_ = NULL;
 		loginStatus_ = 0;
 	}
 	
 	FireClient::~FireClient() {
 		delete client_;
-		delete lastInviteRequest_;
 	}
 	
 	void FireClient::setEventThread(BEThread *et) { eventThread_ = et; }
@@ -134,7 +131,6 @@ namespace xfireclient {
 				cout << "  Nick   :  " << invite->nick << endl;
 				cout << "  Message:  " << invite->msg << endl;
 				cout << "Testing..." << endl;
-				lastInviteRequest_ = new string(invite->name);
 				break;
 			}
 			

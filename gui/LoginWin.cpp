@@ -38,7 +38,10 @@ LoginWin::LoginWin(Glib::RefPtr<Gnome::Glade::Xml> refXml, Application *app, Fir
 }
 
 LoginWin::~LoginWin() {
-	delete loginwin_;
+	login_btn_ = 0;
+	pass_entry_ = 0;
+	user_entry_ = 0;
+	loginwin_ = 0;
 	delete eventThread_;
 }
 
@@ -54,10 +57,11 @@ void LoginWin::eventLoginFailed() {
 	Gtk::MessageDialog dialog("Login Failed.", false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK, true);
 	dialog.set_secondary_text("Please check username/password");
 	dialog.run();
+	//app_ptr_->createNewLoginWin();
 }
 
 void LoginWin::eventLoginSuccess() {
-	app_ptr_->getBuddyListWin();
+	app_ptr_->createBuddyListWin();
 	app_ptr_->hideLoginWin();
 }
 

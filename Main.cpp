@@ -17,7 +17,7 @@ int main(int argc, char *argv[]) {
 	Gtk::Main kit(argc, argv);
 	
 	Application fireapp = Application("gui/glade/fire4lin.glade");
-	fireapp.getLoginWin();
+	fireapp.createNewLoginWin();
 	kit.run();
 	return 0;
 }
