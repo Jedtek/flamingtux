@@ -33,8 +33,9 @@ class BuddyListWin : public Gtk::Window {
 		// Tree model columns
 		class ModelColumns : public Gtk::TreeModel::ColumnRecord {
 			public:
-				ModelColumns() { add(m_col_nickname); add(m_col_username); add(m_col_status); add(m_col_id); }
+				ModelColumns() { add(m_col_nickname_rendered); add(m_col_nickname); add(m_col_username); add(m_col_status); add(m_col_id); }
 				
+				Gtk::TreeModelColumn<Glib::ustring> m_col_nickname_rendered;
 				Gtk::TreeModelColumn<Glib::ustring> m_col_nickname;
 				Gtk::TreeModelColumn<Glib::ustring> m_col_username;
 				Gtk::TreeModelColumn<Glib::ustring> m_col_status;
