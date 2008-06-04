@@ -4,6 +4,7 @@
 #include <sstream>
 
 #include "BuddyListWin.h"
+#include "../Application.h"
 
 #include <libglademm/xml.h>
 #include <gtkmm.h>
@@ -90,6 +91,10 @@ void BuddyListWin::createTreeModel() {
 
 	buddyview_->append_column(nickname_column); 
 	
+	buddyview_->add_events(Gdk::BUTTON_PRESS_MASK);
+	buddyview_->signal_button_press_event().connect_notify(
+					      sigc::mem_fun(*this, &BuddyListWin::on_treeview_clicked));
+	
 	//buddyview_->set_reorderable();
 	
 	// Fill the TreeView's model
@@ -102,6 +107,22 @@ void BuddyListWin::createTreeModel() {
 	// Add the TreeView's view columns
 	//buddyview_->append_column("Nickname", m_Columns.m_col_nickname);
 	buddyview_->set_headers_visible(FALSE);
+}
+
+void BuddyListWin::on_treeview_clicked(GdkEventButton *event) {
+	if (event->type == GDK_2BUTTON_PRESS) {
+		cout << "YAAY IT GOT DOUBLE CLICKY" << endl;
+		Glib::RefPtr<Gtk::TreeView::Selection> refSelection = buddyview_->get_selection();
+		if(refSelection)
+		{
+			Gtk::TreeModel::iterator iter = refSelection->get_selected();
+			if(iter) {
+// 				Glib::ustring id = (*iter)[m_Columns.m_col_username];
+// 				std::cout << "  Selected ID=" << id << std::endl;
+				app_ptr_->appendPageConvoWin(iter);	
+			}
+		}
+	}
 }
 
 void BuddyListWin::addBuddyToTree(int id, Glib::ustring username, Glib::ustring nickname, Glib::ustring statusmsg, buddy_status status) {

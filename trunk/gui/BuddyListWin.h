@@ -4,12 +4,13 @@
 #include <libglademm/xml.h>
 #include <gtkmm.h>
 
+#include "../ModelColumns.h"
 #include "../backend/FireClient.h"
 #include "../backend/BackendEvents.h"
 class Application;
 
 enum buddy_status { ONLINE, OFFLINE };
-
+		
 class BuddyListWin : public Gtk::Window {
 	public:
 		explicit BuddyListWin(Glib::RefPtr<Gnome::Glade::Xml> refXml, Application *app, FireClient *client);
@@ -30,18 +31,6 @@ class BuddyListWin : public Gtk::Window {
 		
 		BEThread *eventThread_;
 		
-		// Tree model columns
-		class ModelColumns : public Gtk::TreeModel::ColumnRecord {
-			public:
-				ModelColumns() { add(m_col_nickname_rendered); add(m_col_nickname); add(m_col_username); add(m_col_status); add(m_col_id); }
-				
-				Gtk::TreeModelColumn<Glib::ustring> m_col_nickname_rendered;
-				Gtk::TreeModelColumn<Glib::ustring> m_col_nickname;
-				Gtk::TreeModelColumn<Glib::ustring> m_col_username;
-				Gtk::TreeModelColumn<Glib::ustring> m_col_status;
-				Gtk::TreeModelColumn<int> m_col_id;
-		};
-		
 		ModelColumns m_Columns;
 		
 		Gtk::TreeModel::Row online_row;
@@ -54,6 +43,7 @@ class BuddyListWin : public Gtk::Window {
 		FireClient *client_;
 		void on_event_finish();
 		void createTreeModel();
+		void on_treeview_clicked(GdkEventButton *event);
 };
 
 #endif

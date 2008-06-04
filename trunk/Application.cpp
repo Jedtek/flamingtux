@@ -11,7 +11,7 @@
 using namespace std;
 
 Application::Application(string path) 
-	: loginWindow(0), buddyListWindow(0), client_(0) {
+	: loginWindow(0), buddyListWindow(0), convoWindow(0), client_(0) {
 	refXml_ = Gnome::Glade::Xml::create(path);
 	//client_ = new FireClient();
 }
@@ -59,5 +59,12 @@ void Application::createBuddyListWin() {
 
 void Application::hideLoginWin() {
 	loginWindow->get_window().hide();
+}
+
+void Application::appendPageConvoWin(Gtk::TreeModel::iterator &iter) {
+	if (!convoWindow)
+		convoWindow = new ConvoWin(refXml_, this, client_);
+	convoWindow->get_window().show();
+	convoWindow->appendPage(iter);
 }
 
