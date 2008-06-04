@@ -8,9 +8,9 @@
     <property name="visible">True</property>
     <property name="border_width">3</property>
     <property name="title" translatable="yes">Fire4Lin BETA</property>
-    <property name="resizable">False</property>
     <property name="default_width">350</property>
     <property name="default_height">250</property>
+    <property name="destroy_with_parent">True</property>
     <property name="icon">fire4lin_icon.png</property>
     <child>
       <widget class="GtkVBox" id="vbox1">

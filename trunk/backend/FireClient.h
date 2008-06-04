@@ -18,6 +18,7 @@ namespace xfireclient {
 			void run();
 			void receivedPacket(XFirePacket *packet);
 			Client *getClient() { return client_; }
+			void setClient(Client *client) { client_ = client; }
 			int getLoginStatus() { return loginStatus_; }
 			void setLoginStatus(int x) { loginStatus_ = x; }
 			void setEventThread(BEThread *et);
@@ -29,7 +30,6 @@ namespace xfireclient {
 			Client *client_;
 			string username_;
 			string password_;
-			string *lastInviteRequest_;
 			int loginStatus_;
 			BEThread *eventThread_;
 			

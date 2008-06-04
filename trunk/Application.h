@@ -16,11 +16,12 @@ class Application {
 		~Application();
 		
 		void getLoginWin();
-		void getBuddyListWin();
+		void createBuddyListWin();
 		void hideLoginWin();
+		FireClient *getClient() { return client_; }
+		void createNewClient();
+		void createNewLoginWin();
 	private:
-		Gtk::Window *loginwin_;
-		Gtk::Window *buddylistwin_;
 		Glib::RefPtr<Gnome::Glade::Xml> refXml_;
 		FireClient *client_;
 		
