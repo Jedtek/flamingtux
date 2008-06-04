@@ -5,6 +5,7 @@
 
 #include "BuddyListWin.h"
 #include "../Application.h"
+#include "../CommonFunctions.h"
 
 #include <libglademm/xml.h>
 #include <gtkmm.h>
@@ -12,22 +13,6 @@
 using namespace std;
 using namespace xfirelib;
 using namespace xfireclient;
-
-// copied from http://www.parashift.com/c++-faq-lite/misc-technical-issues.html#faq-39.1
-class BadConversion : public std::runtime_error {
-	public:
-		BadConversion(const std::string& s)
-	: std::runtime_error(s)
-		{ }
-};
- 
-inline std::string stringify(int x)
-{
-	std::ostringstream o;
-	if (!(o << x))
-		throw BadConversion("stringify(double)");
-	return o.str();
-} 
 
 BuddyListWin::BuddyListWin(Glib::RefPtr<Gnome::Glade::Xml> refXml, Application *app, FireClient *client)
 	: buddylistwin_(0) {

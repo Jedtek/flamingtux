@@ -17,7 +17,7 @@ class ConvoWin : public Gtk::Window {
 		~ConvoWin();
 
 		Gtk::Window &get_window() const { return *convowin_; }
-		void appendPage(Gtk::TreeModel::iterator &iter);
+		int appendPage(Gtk::TreeModel::iterator &iter);
 		
 	private:
 		Gtk::Window *convowin_;
