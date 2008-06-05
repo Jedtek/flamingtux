@@ -1,3 +1,7 @@
+/* FlamingTux 
+ * Authors: peacey, jeed890 
+ * http://flamingtux.googlecode.com 
+ * This code is GPL, licensing soon though ;) */
 #ifndef ___APPLICATION_H___
 #define ___APPLICATION_H___
 

@@ -1,3 +1,7 @@
+/* FlamingTux 
+ * Authors: peacey, jeed890 
+ * http://flamingtux.googlecode.com 
+ * This code is GPL, licensing soon though ;) */
 #ifndef ___BACKENDEVENTS_H___
 #define ___BACKENDEVENTS_H___
 

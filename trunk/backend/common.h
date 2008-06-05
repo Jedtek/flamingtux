@@ -1,3 +1,8 @@
+/* FlamingTux 
+ * Authors: peacey, jeed890 
+ * http://flamingtux.googlecode.com 
+ * This code is GPL, licensing soon though ;) */
+
 /* Basic includes */
 #include <iostream>
 #include <string>
