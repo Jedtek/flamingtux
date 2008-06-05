@@ -1,7 +1,7 @@
-/* Fire4lin BETA By Jeed & Peacey
- * BETA aims: connects, sends a message, recieves a message and then dies 
- * for proof its do-able :) 
- * Compile with: g++ beta.cpp -o beta -Wall -lxfirelib -pthread */
+/* FlamingTux 
+ * Authors: peacey, jeed890 
+ * http://flamingtux.googlecode.com 
+ * This code is GPL, licensing soon though ;) */
 
 // Includes
 #include "FireClient.h"

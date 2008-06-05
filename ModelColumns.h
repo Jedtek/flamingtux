@@ -1,3 +1,7 @@
+/* FlamingTux 
+ * Authors: peacey, jeed890 
+ * http://flamingtux.googlecode.com 
+ * This code is GPL, licensing soon though ;) */
 #ifndef __MODELCOLUMNS__H
 #define __MODELCOLUMNS__H
 
