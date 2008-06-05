@@ -16,7 +16,7 @@ int main(int argc, char *argv[]) {
 	Glib::thread_init();
 	Gtk::Main kit(argc, argv);
 	
-	Application fireapp = Application("gui/glade/fire4lin.glade");
+	Application fireapp = Application("gui/glade/flamingtux.glade");
 	fireapp.createNewLoginWin();
 	kit.run();
 	return 0;
