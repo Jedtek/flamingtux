@@ -25,7 +25,9 @@ class BuddyListWin : public Gtk::Window {
 		
 		void eventUpdateBuddyList();
 		void set_client(FireClient *client) { client_ = client; }
-		
+		/* im just gunna shove my invite functions here :D - Jeed */
+		void onInviteRecieved();
+		/* Like youll stop me :D */
 		void onStatusEntryChange();
 		bool onQueryTooltip(int x, int y, bool keyboard_tooltip, const Glib::RefPtr<Gtk::Tooltip>& tooltip);
 	private:
