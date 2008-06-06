@@ -70,24 +70,24 @@ void BuddyListWin::onInviteRecieved() {
 	cout << "Invite recieved..spawning dialouge" << endl;
 	vector<InviteRequestPacket *> inviteVector = client_->getInviteVector();
 	for (int i = 0; i < inviteVector.size(); i++) {
-		InviteRequestPacket *packet = inviteVector.at(i);
-		cout << packet->name << endl;
+		InviteRequestPacket *invite = inviteVector.at(i);
+		Gtk::MessageDialog invite_accept(*this, "You have a new invite request from:", false, Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_YES_NO);
+		invite_accept.set_secondary_text("User: " + invite->name + " Nickname:" + invite->nick + " Invite Message:" + invite->msg);
+		int i_result = invite_accept.run();
+		switch(i_result) {
+			case(Gtk::RESPONSE_YES): {
+				/* better let that pesky backend know */
+				InviteBuddyPacket *invite_accepted = new InviteBuddyPacket();
+				invite_accepted->InviteBuddyPacket::addInviteName(invite->name, "Accepted.");
+				client_->getClient()->send(invite_accepted);
+			}
+			case(Gtk::RESPONSE_NO): {
+				/* Seems you do nothing here.. */
+				break;
+			}
+		delete invite;
+		}
 	}
-	/*Gtk::MessageDialog invite_accept(*this, "You have a new invite request from:", false, Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_YES_NO);
-	invite_accept.set_secondary_text("User: " + invite->name + "Nickname:" + invite->nick + "Invite Message:" + invite->msg);
-	int i_result = invite_accept.run();
-	switch(i_result) {
-		case(Gtk::RESPONSE_YES): {
-		*	* better let that pesky backend know *
-			InviteBuddyPacket *invite_accepted = new InviteBuddyPacket();
-			invite_accepted->InviteBuddyPacket::addInviteName(invite->name, "Accepted.");
-			client_->getClient()->send(invite_accepted);
-		}
-		case(Gtk::RESPONSE_NO): {
-			/* Seems you do nothing here.. *
-			break;
-		}
-	}*/
 }
 void BuddyListWin::createTreeModel() {
 	buddystore_ = Gtk::TreeStore::create(m_Columns);
@@ -237,6 +237,7 @@ void BuddyListWin::on_event_finish() {
 		}
 		case INVITE_REQUEST: {
 			onInviteRecieved();
+			break;
 		}
 		default:
 			break;
