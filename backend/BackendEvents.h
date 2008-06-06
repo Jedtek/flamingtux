@@ -8,7 +8,7 @@
 #include <libglademm/xml.h>
 #include <gtkmm.h>
 
-enum event_type { NOT_SET = 0, LOGIN_FAILED, LOGIN_SUCCESS, UPDATE_BUDDY_LIST };
+enum event_type { NOT_SET = 0, LOGIN_FAILED, LOGIN_SUCCESS, UPDATE_BUDDY_LIST, INVITE_REQUEST };
 
 class BEThread : public sigc::trackable {
 	public:

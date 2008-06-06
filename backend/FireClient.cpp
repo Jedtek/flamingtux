@@ -6,7 +6,7 @@
 // Includes
 #include "FireClient.h"
 #include "common.h"
-
+#include <vector>
 /* Now we begin the declerations of the functions defined in FireClient classey */
 
 namespace xfireclient {
@@ -46,7 +46,6 @@ namespace xfireclient {
 	void FireClient::launchThread(event_type type) {
 		eventThread_->launch(type);	
 	}
-	
 	void FireClient::receivedPacket(XFirePacket *packet) {
 		XFirePacketContent *content = packet->getContent();
 		cout << " Received Packet lala: " << content->getPacketId() << endl;
@@ -125,13 +124,10 @@ namespace xfireclient {
 				break;
 			}
 			case XFIRE_PACKET_INVITE_REQUEST_PACKET: {
-				cout << "Invitation Request: " << endl;
 				InviteRequestPacket *invite = (InviteRequestPacket*)content;
-				cout << "  Name   :  " << invite->name << endl;
-				cout << "  Nick   :  " << invite->nick << endl;
-				cout << "  Message:  " << invite->msg << endl;
-				cout << "Testing..." << endl;
-				break;
+				InviteRequestPacket *copy_invite = new InviteRequestPacket(*invite);
+				inviteVector.push_back(copy_invite);
+				Glib::signal_idle().connect(sigc::bind<1>(sigc::bind_return(sigc::mem_fun(*this, &FireClient::launchThread), false), INVITE_REQUEST)); /* Call to buddylist spawn shit */
 			}
 			
 			case XFIRE_BUDDYS_NAMES_ID: {

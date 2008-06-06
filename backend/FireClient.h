@@ -8,7 +8,8 @@
 #include "common.h"
 #include <gtkmm.h>
 #include "BackendEvents.h"
-
+#include <vector>
+#include "xfirelib/inviterequestpacket.h"
 namespace xfireclient {
 	using namespace std;
 	using namespace xfirelib;
@@ -30,13 +31,14 @@ namespace xfireclient {
 			void setPassword(string password) { password_ = password; }
 			string getUsername() { return username_; }
 			string getPassword() { return password_; }
+			vector<InviteRequestPacket *> getInviteVector() { return inviteVector; }
 		private:
 			Client *client_;
 			string username_;
 			string password_;
 			int loginStatus_;
 			BEThread *eventThread_;
-			
+			vector<InviteRequestPacket *> inviteVector;
 			void printBuddyList();
 			void launchThread(event_type type);
 			
