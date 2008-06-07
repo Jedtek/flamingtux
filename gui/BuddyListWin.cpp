@@ -52,6 +52,8 @@ BuddyListWin::BuddyListWin(Glib::RefPtr<Gnome::Glade::Xml> refXml, Application *
 	eventThread_->signal_finished().connect(sigc::mem_fun(*this, &BuddyListWin::on_event_finish));
 	// now we need to change the event thread for the client so it starts signalling with this one
 	client_->setEventThread(eventThread_);
+	/* set this for use elsewhere in this file */
+	refXml_ = refXml;
 }
 
 BuddyListWin::~BuddyListWin() {
@@ -88,6 +90,22 @@ void BuddyListWin::onInviteRecieved() {
 		delete invite;
 		}
 	}
+}
+void BuddyListWin::SendInvite() {
+	/* Lets spawn a funky window to get the username they want to add! 
+	 * Why dont gtk+/gtkmm implement a damn text entry dialouge, it'd be so much easier */
+	refXml_->get_widget("InviteSendWin", invitesendwin_);
+	refXml_->get_widget("InviteSendWho", invitesendwho_);
+	refXml_->get_widget("InviteSendBtn", invitesendbtn_);
+	invitesendbtn_->signal_clicked().connect( sigc::bind<1>(sigc::mem_fun(*this,         &BuddyListWin::OnInviteBtnClick), invitesendwho_));
+
+}
+void BuddyListWin::OnInviteBtnClick(Gtk::Entry *invitesendwho_) {
+	string WhoToInvite = invitesendwho_->get_text();
+	cout << "we want to invite this bad boy: " << WhoToInvite << endl;
+	InviteBuddyPacket *invite_sender = new InviteBuddyPacket();
+	invite_sender->InviteBuddyPacket::addInviteName(invitesendwho_->get_text(), "Add me.");
+	client_->getClient()->send(invite_sender);
 }
 void BuddyListWin::createTreeModel() {
 	buddystore_ = Gtk::TreeStore::create(m_Columns);

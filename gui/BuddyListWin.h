@@ -27,10 +27,13 @@ class BuddyListWin : public Gtk::Window {
 		void set_client(FireClient *client) { client_ = client; }
 		/* im just gunna shove my invite functions here :D - Jeed */
 		void onInviteRecieved();
+		void SendInvite();
+		void OnInviteBtnClick(Gtk::Entry *invitesendwho_);
 		/* Like youll stop me :D */
 		void onStatusEntryChange();
 		bool onQueryTooltip(int x, int y, bool keyboard_tooltip, const Glib::RefPtr<Gtk::Tooltip>& tooltip);
 	private:
+		Glib::RefPtr<Gnome::Glade::Xml> refXml_;
 		Gtk::Window *buddylistwin_;
 		Gtk::Entry *statusentry_;
 		Gtk::ComboBox *statuscombobox_;
@@ -44,12 +47,17 @@ class BuddyListWin : public Gtk::Window {
 		
 		Gtk::TreeView *buddyview_;
 		Glib::RefPtr<Gtk::TreeStore> buddystore_;
+
+		Gtk::Window *invitesendwin_;
+		Gtk::Entry *invitesendwho_;
+		Gtk::Button *invitesendbtn_;		
 		
 		Application *app_ptr_;
 		FireClient *client_;
 		void on_event_finish();
 		void createTreeModel();
 		void on_treeview_clicked(GdkEventButton *event);
+
 };
 
 #endif
