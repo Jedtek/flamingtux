@@ -45,6 +45,7 @@ ConvoWin::~ConvoWin() {
 int ConvoWin::appendPage(Gtk::TreeModel::iterator &iter) {
 	ModelColumns m_Columns;
 	
+	/* check if a convo is already opened for the user */
 	if (convonotebook_->get_n_pages()) {
 		Gtk::Notebook_Helpers::PageIterator i;
 		Gtk::VBox *vbox;
@@ -59,23 +60,52 @@ int ConvoWin::appendPage(Gtk::TreeModel::iterator &iter) {
 		}
 	}
 	
+	/* create the new child widget */
 	Gtk::VBox *notebook_vbox = new Gtk::VBox();
-	Gtk::Label *label = new Gtk::Label();
+	Gtk::HBox *entry_hbox = new Gtk::HBox();
+	Gtk::Button *entry_btn = new Gtk::Button("Send");
+	Gtk::Label *label = new Gtk::Label("To: " + (*iter)[m_Columns.m_col_nickname]);
 	Gtk::Label *label_id = new Gtk::Label();
 	label_id->set_label(stringify((*iter)[m_Columns.m_col_id]));
 	Gtk::TextView *text_view = new Gtk::TextView();
+	text_view->set_editable(false);
 	Gtk::Entry *entry = new Gtk::Entry();
 	notebook_vbox->pack_start(*label_id, false, false, 0);
 	notebook_vbox->pack_start(*label, false, false, 0);
 	notebook_vbox->pack_start(*text_view, true, true, 0);
-	notebook_vbox->pack_start(*entry, false, false, 0);
+	notebook_vbox->pack_start(*entry_hbox, false, false, 0);
+	entry_hbox->pack_start(*entry, true, true, 0);
+	entry_hbox->pack_start(*entry_btn, true, true, 0);
 	
+	/* add it to the notebook */
 	convonotebook_->append_page(*notebook_vbox, (*iter)[m_Columns.m_col_username]);
 	convonotebook_->show();
 	notebook_vbox->show();
 	label->show();
 	text_view->show();
 	entry->show();
+	entry_hbox->show();
+	entry_btn->show();
+	
+	/* add the button signal */
+	entry_btn->signal_pressed().connect(sigc::bind<1>(sigc::mem_fun(*this, &ConvoWin::onSendButtonPressed), notebook_vbox));
+	
 	return 1;
 }
+
+void ConvoWin::onSendButtonPressed(Gtk::VBox *vbox) {
+	cout << "YAAY BUTTON HAS BEEN PWESSEEEEDDD" << endl;
+	Gtk::Box_Helpers::BoxList::iterator wi = vbox->children().begin();
+	Gtk::Label *label_id = dynamic_cast<Gtk::Label*>(wi->get_widget());
+	Gtk::Label *label = dynamic_cast<Gtk::Label*>((++wi)->get_widget());
+	Gtk::TextView *text_view = dynamic_cast<Gtk::TextView*>((++wi)->get_widget());
+	Gtk::HBox *entry_hbox = dynamic_cast<Gtk::HBox*>((++wi)->get_widget());
+	Gtk::Entry *entry = dynamic_cast<Gtk::Entry*>((entry_hbox->children().begin())->get_widget());
+	
+	Glib::RefPtr<Gtk::TextBuffer> previous = text_view->get_buffer();
+	//Gtk::TextBuffer *buffer = new Gtk::TextBuffer(previous);
+}
+
+
+
 
