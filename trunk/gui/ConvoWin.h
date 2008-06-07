@@ -24,6 +24,8 @@ class ConvoWin : public Gtk::Window {
 		int appendPage(Gtk::TreeModel::iterator &iter);
 		
 	private:
+		void onSendButtonPressed(Gtk::VBox *vbox);
+				
 		Gtk::Window *convowin_;
 		Glib::RefPtr<Gnome::Glade::Xml> refXml_;
 		Gtk::Notebook *convonotebook_;
