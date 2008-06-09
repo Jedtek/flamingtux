@@ -70,16 +70,22 @@ namespace xfireclient {
 			case XFIRE_MESSAGE_ID: {
 				cout << "Got Message." << endl;
 				if( (( MessagePacket*)content)->getMessageType() == 0){
+					MessagePacket *message = (MessagePacket*)content;
 					BuddyListEntry *entry = client_->getBuddyList()->getBuddyBySid( ((MessagePacket*)content)->getSid() );
 					cout << "------------" << endl;
 					cout << entry->username << " says:\n"; 
 					cout << ((MessagePacket*)content)->getMessage() << endl;
-					cout << "------------" << endl;
-							
+					cout << "------------" << endl;	
 					/* now since we got a message lets auto-reply */
-					SendMessagePacket msg;
-					msg.init(client_, entry->username, "lool auto-reply!");
-					client_->send(&msg);
+// 					SendMessagePacket msg;
+// 					msg.init(client_, entry->username, "lool auto-reply!");
+// 					client_->send(&msg);
+					
+					MessagePacket *copy_message = new MessagePacket(*message);
+					messageVector.push_back(copy_message);
+					
+					Glib::signal_idle().connect(
+					sigc::bind<1>(sigc::bind_return(sigc::mem_fun(*this, &FireClient::launchThread), false), GOT_MESSAGE));
 				}
 				break;
 			}
@@ -162,6 +168,14 @@ namespace xfireclient {
 	  entry->game2);
 		}
 		printf("-------------------------------------------------------------------------------------\n\n");
+	}
+	
+	bool FireClient::sendMessage(Glib::ustring recepient, Glib::ustring message) {
+		SendMessagePacket msg;
+		msg.init(client_, recepient, message);
+		if (client_->send( &msg ) == true)
+			return true;
+		return false;
 	}
 };
 

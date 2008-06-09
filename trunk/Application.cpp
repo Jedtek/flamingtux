@@ -18,6 +18,8 @@ Application::Application(string path)
 	: loginWindow(0), buddyListWindow(0), convoWindow(0), client_(0) {
 	refXml_ = Gnome::Glade::Xml::create(path);
 	//client_ = new FireClient();
+// 	convoWindow = new ConvoWin(refXml_, this, client_);
+// 	convoWindow->get_window().hide();
 }
 
 Application::~Application() {
@@ -65,7 +67,13 @@ void Application::hideLoginWin() {
 	loginWindow->get_window().hide();
 }
 
+void Application::createNewConvoWin() {
+	if (!convoWindow)
+		convoWindow = new ConvoWin(refXml_, this, client_);	
+}
 void Application::appendPageConvoWin(Gtk::TreeModel::iterator &iter) {
+	ModelColumns m_Columns;
+	
 	if (!convoWindow)
 		convoWindow = new ConvoWin(refXml_, this, client_);
 	convoWindow->get_window().show();

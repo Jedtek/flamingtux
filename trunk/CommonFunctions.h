@@ -6,6 +6,7 @@
 #define __COMMONFUNCTIONS__H
 
 std::string stringify(int x);
+int intify(std::string x);
 
 #endif
 

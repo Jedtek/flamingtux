@@ -14,7 +14,7 @@
 class Application;
 
 enum buddy_status { ONLINE, OFFLINE };
-		
+
 class BuddyListWin : public Gtk::Window {
 	public:
 		explicit BuddyListWin(Glib::RefPtr<Gnome::Glade::Xml> refXml, Application *app, FireClient *client);
@@ -32,11 +32,12 @@ class BuddyListWin : public Gtk::Window {
 		/* Like youll stop me :D */
 		void onStatusEntryChange();
 		bool onQueryTooltip(int x, int y, bool keyboard_tooltip, const Glib::RefPtr<Gtk::Tooltip>& tooltip);
+		Gtk::TreeIter &get_iter_at_username(Glib::ustring username);
 	private:
 		Glib::RefPtr<Gnome::Glade::Xml> refXml_;
 		Gtk::Window *buddylistwin_;
 		Gtk::Entry *statusentry_;
-		Gtk::ComboBox *statuscombobox_;
+		Gtk::ComboBoxEntry *statuscombobox_;
 		
 		BEThread *eventThread_;
 		
@@ -56,7 +57,10 @@ class BuddyListWin : public Gtk::Window {
 		FireClient *client_;
 		void on_event_finish();
 		void createTreeModel();
+		void onMessageReceived();
 		void on_treeview_clicked(GdkEventButton *event);
+		void on_treeview_keyed(GdkEventKey *event);
+		void onStatusEntryKeyRelease(GdkEventKey* event);
 
 };
 

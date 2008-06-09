@@ -22,10 +22,12 @@ class ConvoWin : public Gtk::Window {
 
 		Gtk::Window &get_window() const { return *convowin_; }
 		int appendPage(Gtk::TreeModel::iterator &iter);
-		
+		void gotMessage(Gtk::TreeIter &iter, Glib::ustring message);
+		void updatePage(Gtk::TreeModel::Row childrow);
 	private:
-		void onSendButtonPressed(Gtk::VBox *vbox);
-				
+		void onSendButtonPressed(Gtk::VBox *vbox, Gtk::TreeModel::iterator &iter);
+		void updateTextView(Gtk::TextView *text_view, Glib::ustring nickname, Glib::ustring text);
+		void onVScrollValueChange(Gtk::ScrolledWindow *scrolled_win);
 		Gtk::Window *convowin_;
 		Glib::RefPtr<Gnome::Glade::Xml> refXml_;
 		Gtk::Notebook *convonotebook_;
