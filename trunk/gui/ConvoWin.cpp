@@ -32,22 +32,46 @@ ConvoWin::ConvoWin(Glib::RefPtr<Gnome::Glade::Xml> refXml, Application *app, Fir
 	if (!convowinvbox_)
 		throw std::runtime_error("Couldn't find ConvoWinVBox");
 	
+	convowin_->signal_delete_event().connect_notify(sigc::mem_fun(*this, &ConvoWin::onDeleteEvent));
+	
 	convonotebook_ = new Gtk::Notebook();
 	convowinvbox_->pack_end(*convonotebook_, true, true, 0);
-
+	convonotebook_->signal_page_removed().connect_notify(sigc::mem_fun(*this, &ConvoWin::onPageRemoved));
+	convonotebook_->signal_switch_page().connect_notify(sigc::mem_fun(*this, &ConvoWin::onPageSwitched));
 }
 
 ConvoWin::~ConvoWin() {
 	
 }
 
-int ConvoWin::appendPage(Gtk::TreeModel::iterator &iter) {
+void ConvoWin::onDeleteEvent(GdkEventAny *e) {
+	int i;
+	Gtk::VBox *vbox;
+	for(i = 0; i != convonotebook_->get_n_pages(); ) {
+		vbox = (Gtk::VBox *) (convonotebook_->get_nth_page(i));
+		closeTab(vbox);
+	}
+}
+
+void ConvoWin::onPageRemoved(Gtk::Widget* page, guint page_num) {
+	if (!convonotebook_->get_n_pages())
+		convowin_->hide();
+}
+
+void ConvoWin::onPageSwitched(GtkNotebookPage* page, guint page_num) {
+	Gtk::HBox *hbox = (Gtk::HBox *) convonotebook_->get_tab_label(*(convonotebook_->get_nth_page(page_num)));	
+	Gtk::Label *label = dynamic_cast<Gtk::Label *>((hbox->children().begin())->get_widget());
+	//Gtk::Label *label = dynamic_cast<Gtk::Label *>(*(eb->get_children().begin()));
+	label->set_markup(label->get_text());
+}
+
+Gtk::Notebook_Helpers::PageIterator ConvoWin::appendPage(Gtk::TreeModel::iterator &iter) {
 	ModelColumns m_Columns;
 	
 	cout << (*iter)[m_Columns.m_col_nickname] << endl;
 	/* check if a convo is already opened for the user */
+	Gtk::Notebook_Helpers::PageIterator i = convonotebook_->pages().begin();
 	if (convonotebook_->get_n_pages()) {
-		Gtk::Notebook_Helpers::PageIterator i;
 		Gtk::VBox *vbox;
 		Gtk::Box_Helpers::BoxList::iterator bi;
 		Gtk::Label *label_i;
@@ -56,8 +80,8 @@ int ConvoWin::appendPage(Gtk::TreeModel::iterator &iter) {
 			bi = vbox->children().begin();
 			label_i = dynamic_cast<Gtk::Label*>(bi->get_widget());
 			if (stringify((*iter)[m_Columns.m_col_id]) == label_i->get_text()) {
-				convonotebook_->set_current_page(convonotebook_->page_num(*vbox));
-				return 0;
+				//convonotebook_->set_current_page(convonotebook_->page_num(*vbox));
+				return i;
 			}
 		}
 	}
@@ -75,10 +99,24 @@ int ConvoWin::appendPage(Gtk::TreeModel::iterator &iter) {
 	Gtk::TextView *text_view = new Gtk::TextView();
 	text_view->set_editable(false);
 	Gtk::TextView *text_view2 = new Gtk::TextView();
-	//text_view2->set_flags(~Gtk::CAN_FOCUS);
-	scrolled_win->set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_AUTOMATIC);
+	
+	/* create the page label with close button */
+	Gtk::HBox *page_hbox = Gtk::manage(new Gtk::HBox);
+	Gtk::Label *page_label = Gtk::manage(new Gtk::Label());
+	page_label->set_markup((*iter)[m_Columns.m_col_username]);
+	//Gtk::EventBox *page_eb = Gtk::manage(new Gtk::EventBox);
+	//page_eb->add(*page_label);
+	page_hbox->pack_start(*page_label);
+	Gtk::Button *page_button = Gtk::manage(new Gtk::Button);
+	Gtk::Image *image = Gtk::manage(new Gtk::Image(Gtk::Stock::CLOSE, Gtk::ICON_SIZE_MENU)); 
+	page_button->add(*image); 
+	page_button->signal_clicked().
+	connect(sigc::bind<Gtk::VBox*>(sigc::mem_fun(*this, &ConvoWin::onCloseTabClicked), notebook_vbox) ); 
+	page_hbox->pack_start(*page_button, Gtk::PACK_SHRINK);
+	
+	scrolled_win->set_policy(Gtk::POLICY_NEVER, Gtk::POLICY_AUTOMATIC);
 	scrolled_win->add(*text_view);
-	scrolled_win2->set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_AUTOMATIC);
+	scrolled_win2->set_policy(Gtk::POLICY_NEVER, Gtk::POLICY_AUTOMATIC);
 	scrolled_win2->add(*text_view2);
 	notebook_vbox->pack_start(*label_id, false, false, 0);
 	notebook_vbox->pack_start(*label_nick, false, false, 0);
@@ -88,11 +126,11 @@ int ConvoWin::appendPage(Gtk::TreeModel::iterator &iter) {
 	entry_hbox->pack_start(*scrolled_win2, true, true, 0);
 	entry_hbox->pack_start(*entry_btn, false, false, 0);
 	
-	scrolled_win->get_vscrollbar()->get_adjustment()->signal_changed().connect(sigc::bind(mem_fun(*this,&ConvoWin::onVScrollValueChange), scrolled_win));
-	
 	/* add it to the notebook */
-	convonotebook_->append_page(*notebook_vbox, (*iter)[m_Columns.m_col_username]);
+	convonotebook_->append_page(*notebook_vbox, *page_hbox);
 	convonotebook_->show();
+	page_hbox->show();
+	page_hbox->show_all_children();
 	notebook_vbox->show();
 	label->show();
 	scrolled_win->show();
@@ -106,6 +144,7 @@ int ConvoWin::appendPage(Gtk::TreeModel::iterator &iter) {
 		text_view2->get_buffer()->set_text("The user is currently offline");
 		text_view2->set_sensitive(false);
 	}
+	text_view->set_cursor_visible(false);
 	
 	/* add the button signal */
 	entry_btn->add_accelerator("activate", convowin_->get_accel_group(), GDK_Return, 
@@ -113,9 +152,11 @@ int ConvoWin::appendPage(Gtk::TreeModel::iterator &iter) {
 	entry_btn->signal_pressed().connect(sigc::bind(sigc::mem_fun(*this, &ConvoWin::onSendButtonPressed), notebook_vbox, iter));
 	entry_btn->signal_activate().connect(sigc::bind(sigc::mem_fun(*this, &ConvoWin::onSendButtonPressed), notebook_vbox, iter));
 	
-	convonotebook_->set_current_page(convonotebook_->page_num(*notebook_vbox));
+	//convonotebook_->set_current_page(convonotebook_->page_num(*notebook_vbox));
+	
+	scrolled_win->get_vscrollbar()->get_adjustment()->signal_changed().connect(sigc::bind(mem_fun(*this,&ConvoWin::onVScrollValueChange), scrolled_win));
 				 
-	return 0;
+	return i;
 }
 
 void ConvoWin::onSendButtonPressed(Gtk::VBox *vbox, Gtk::TreeModel::iterator &iter) {
@@ -200,14 +241,17 @@ void ConvoWin::gotMessage(Gtk::TreeIter &iter, Glib::ustring message) {
 	ModelColumns m_Columns;
 	//app_ptr_->getBuddyListWin()->get_iter_at_username(username);
 	/* check if a convo is already opened for the user */
-	app_ptr_->appendPageConvoWin(iter);
+	Gtk::Notebook_Helpers::PageIterator i = app_ptr_->appendPageConvoWin(iter);
+// 	if (!i)
+// 		i = app_ptr_->appendPageConvoWin(iter);
+// 	/* check if a convo is already opened for the user */
+// 	Gtk::Notebook_Helpers::PageIterator i;
+// 	for(i = convonotebook_->pages().begin(); i != convonotebook_->pages().end(); i++) {
+// 		cout << "LALALALALALALALALLA: " << (i->get_tab_label_text() << endl;
+// 		if (i->get_tab_label_text() == (*iter)[m_Columns.m_col_username])
+// 			break;
+// 	}
 	
-	/* check if a convo is already opened for the user */
-	Gtk::Notebook_Helpers::PageIterator i;
-	for(i = convonotebook_->pages().begin(); i != convonotebook_->pages().end(); i++) {
-		if (i->get_tab_label_text() == (*iter)[m_Columns.m_col_username])
-			break;
-	}
 	Gtk::VBox *vbox = dynamic_cast<Gtk::VBox*>(i->get_child());
 	Gtk::Box_Helpers::BoxList::iterator wi = vbox->children().begin();
 	Gtk::Label *label_id = dynamic_cast<Gtk::Label*>(wi->get_widget());
@@ -216,5 +260,45 @@ void ConvoWin::gotMessage(Gtk::TreeIter &iter, Glib::ustring message) {
 	Gtk::ScrolledWindow *scrolled_win = dynamic_cast<Gtk::ScrolledWindow*>((++wi)->get_widget());
 	Gtk::TextView *text_view = dynamic_cast<Gtk::TextView*>(*(scrolled_win->get_children().begin()));
 	updateTextView(text_view, label_nick->get_text(), message);
+	
+	if (convonotebook_->get_current_page() != convonotebook_->page_num(*vbox)) {
+		Gtk::HBox *hbox = (Gtk::HBox *) convonotebook_->get_tab_label(*vbox);	
+		Gtk::Label *label = dynamic_cast<Gtk::Label *>((hbox->children().begin())->get_widget());
+// 		Gtk::Label *label = dynamic_cast<Gtk::Label *>(*(eb->get_children().begin()));
+		label->set_markup("<b><span color='Red'>" + label->get_text() + "</span></b>");
+	}
+	
+	//convowin_->set_urgency_hint(true);
 }
 
+void ConvoWin::onCloseTabClicked(Gtk::VBox *notebook_vbox) {
+	closeTab(notebook_vbox);
+}
+
+void ConvoWin::closeTab(Gtk::VBox *notebook_vbox) {
+	
+	convonotebook_->remove_page(*notebook_vbox);
+		
+	Gtk::Box_Helpers::BoxList::iterator wi = notebook_vbox->children().begin();
+	Gtk::Label *label_id = dynamic_cast<Gtk::Label*>(wi->get_widget());
+	Gtk::Label *label_nick = dynamic_cast<Gtk::Label*>((++wi)->get_widget());
+	Gtk::Label *label = dynamic_cast<Gtk::Label*>((++wi)->get_widget());
+	Gtk::ScrolledWindow *scrolled_win = dynamic_cast<Gtk::ScrolledWindow*>((++wi)->get_widget());
+	Gtk::TextView *text_view = dynamic_cast<Gtk::TextView*>(*(scrolled_win->get_children().begin()));
+	Gtk::HBox *entry_hbox = dynamic_cast<Gtk::HBox*>((++wi)->get_widget());
+	Gtk::ScrolledWindow *scrolled_win2 = dynamic_cast<Gtk::ScrolledWindow*>((entry_hbox->children().begin())->get_widget());
+	Gtk::Button *send_btn = dynamic_cast<Gtk::Button*>((++(entry_hbox->children().begin()))->get_widget());
+	Gtk::TextView *text_view_input = dynamic_cast<Gtk::TextView*>(*(scrolled_win2->get_children().begin()));
+		
+	delete text_view_input;
+	delete send_btn;
+	delete scrolled_win2;
+	delete entry_hbox;
+	delete text_view;
+	delete scrolled_win;
+	delete label;
+	delete label_nick;
+	delete label_id;
+	delete notebook_vbox;
+	
+}
