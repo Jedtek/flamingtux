@@ -71,12 +71,13 @@ void Application::createNewConvoWin() {
 	if (!convoWindow)
 		convoWindow = new ConvoWin(refXml_, this, client_);	
 }
-void Application::appendPageConvoWin(Gtk::TreeModel::iterator &iter) {
+ 
+Gtk::Notebook_Helpers::PageIterator Application::appendPageConvoWin(Gtk::TreeModel::iterator &iter) {
 	ModelColumns m_Columns;
 	
 	if (!convoWindow)
 		convoWindow = new ConvoWin(refXml_, this, client_);
 	convoWindow->get_window().show();
-	convoWindow->appendPage(iter);
+	return convoWindow->appendPage(iter);
 }
 

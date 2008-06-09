@@ -21,10 +21,15 @@ class ConvoWin : public Gtk::Window {
 		~ConvoWin();
 
 		Gtk::Window &get_window() const { return *convowin_; }
-		int appendPage(Gtk::TreeModel::iterator &iter);
+		Gtk::Notebook_Helpers::PageIterator appendPage(Gtk::TreeModel::iterator &iter);
 		void gotMessage(Gtk::TreeIter &iter, Glib::ustring message);
 		void updatePage(Gtk::TreeModel::Row childrow);
 	private:
+		void closeTab(Gtk::VBox *notebook_vbox);
+		void onCloseTabClicked(Gtk::VBox *notebook_vbox);
+		void onDeleteEvent(GdkEventAny *e);
+		void onPageRemoved(Gtk::Widget* page, guint page_num);
+		void onPageSwitched(GtkNotebookPage* page, guint page_num);
 		void onSendButtonPressed(Gtk::VBox *vbox, Gtk::TreeModel::iterator &iter);
 		void updateTextView(Gtk::TextView *text_view, Glib::ustring nickname, Glib::ustring text);
 		void onVScrollValueChange(Gtk::ScrolledWindow *scrolled_win);

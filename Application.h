@@ -29,7 +29,7 @@ class Application {
 		void createNewClient();
 		void createNewLoginWin();
 		void createNewConvoWin();
-		void appendPageConvoWin(Gtk::TreeModel::iterator &iter);
+		Gtk::Notebook_Helpers::PageIterator appendPageConvoWin(Gtk::TreeModel::iterator &iter);
 	private:
 		Glib::RefPtr<Gnome::Glade::Xml> refXml_;
 		FireClient *client_;
