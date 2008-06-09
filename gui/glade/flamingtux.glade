@@ -211,6 +211,7 @@
                 <child>
                   <widget class="GtkComboBoxEntry" id="StatusComboBox">
                     <property name="visible">True</property>
+                    <property name="resize_mode">GTK_RESIZE_QUEUE</property>
                     <property name="items" translatable="yes">Online
 Away
 AFK
@@ -218,7 +219,7 @@ Busy
 In-Game</property>
                     <child internal-child="entry">
                       <widget class="GtkEntry" id="StatusEntry">
-                        <accelerator key="Return" modifiers="" signal="activate"/>
+                        <property name="shadow_type">GTK_SHADOW_NONE</property>
                       </widget>
                     </child>
                   </widget>
@@ -270,6 +271,8 @@ In-Game</property>
     </child>
   </widget>
   <widget class="GtkWindow" id="ConvoWin">
+    <property name="width_request">500</property>
+    <property name="height_request">450</property>
     <child>
       <widget class="GtkVBox" id="ConvoWinVBox">
         <property name="visible">True</property>

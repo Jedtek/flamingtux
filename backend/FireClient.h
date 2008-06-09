@@ -32,6 +32,9 @@ namespace xfireclient {
 			string getUsername() { return username_; }
 			string getPassword() { return password_; }
 			vector<InviteRequestPacket *> getInviteVector() { return inviteVector; }
+			vector<MessagePacket *> getMessageVector() { return messageVector; }
+			void clearMessageVector() { messageVector.clear(); }
+			bool sendMessage(Glib::ustring recepient, Glib::ustring message);
 		private:
 			Client *client_;
 			string username_;
@@ -39,6 +42,7 @@ namespace xfireclient {
 			int loginStatus_;
 			BEThread *eventThread_;
 			vector<InviteRequestPacket *> inviteVector;
+			vector<MessagePacket *> messageVector;
 			void printBuddyList();
 			void launchThread(event_type type);
 			

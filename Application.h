@@ -21,11 +21,14 @@ class Application {
 		~Application();
 		
 		void getLoginWin();
+		BuddyListWin *getBuddyListWin() { return buddyListWindow; }
+		ConvoWin *getConvoWin() { return convoWindow; }
 		void createBuddyListWin();
 		void hideLoginWin();
 		FireClient *getClient() { return client_; }
 		void createNewClient();
 		void createNewLoginWin();
+		void createNewConvoWin();
 		void appendPageConvoWin(Gtk::TreeModel::iterator &iter);
 	private:
 		Glib::RefPtr<Gnome::Glade::Xml> refXml_;

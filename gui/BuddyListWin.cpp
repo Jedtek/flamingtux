@@ -38,7 +38,7 @@ BuddyListWin::BuddyListWin(Glib::RefPtr<Gnome::Glade::Xml> refXml, Application *
 		throw std::runtime_error("Couldn't find StatusComboBox");
 	
 	// connect required signals
-	statusentry_->signal_activate().connect(sigc::mem_fun(*this, &BuddyListWin::onStatusEntryChange));
+	statusentry_->signal_key_release_event().connect_notify(sigc::mem_fun(*this, &BuddyListWin::onStatusEntryKeyRelease));
 	statuscombobox_->signal_changed().connect(sigc::mem_fun(*this, &BuddyListWin::onStatusEntryChange));
 	
 	// set default value
@@ -60,12 +60,24 @@ BuddyListWin::~BuddyListWin() {
 	delete buddylistwin_;
 }
 
+void BuddyListWin::onStatusEntryKeyRelease(GdkEventKey* event) {
+	if (event->keyval == GDK_Return) {
+		cout << "Changing status..." << endl;
+		SendStatusMessagePacket *packet = new SendStatusMessagePacket();
+		packet->awaymsg = statusentry_->get_text();
+		client_->getClient()->send( packet );
+		delete packet;
+	}
+}
+
 void BuddyListWin::onStatusEntryChange() {
-	cout << "Changing status..." << endl;
-	SendStatusMessagePacket *packet = new SendStatusMessagePacket();
-	//packet->awaymsg = joinString(cmds,1);//input.substr(5);
-	client_->getClient()->send( packet );
-	delete packet;
+	if (!(statuscombobox_->get_active_row_number() == -1)) {
+		cout << "Changing status..." << endl;
+		SendStatusMessagePacket *packet = new SendStatusMessagePacket();
+		packet->awaymsg = statusentry_->get_text();
+		client_->getClient()->send( packet );
+		delete packet;
+	}
 }
 /* INVITE FUNCTIONS */
 void BuddyListWin::onInviteRecieved() {
@@ -124,7 +136,8 @@ void BuddyListWin::createTreeModel() {
 	buddyview_->add_events(Gdk::BUTTON_PRESS_MASK);
 	buddyview_->signal_button_press_event().connect_notify(
 					      sigc::mem_fun(*this, &BuddyListWin::on_treeview_clicked));
-	
+	buddyview_->signal_key_press_event().connect_notify(
+					      sigc::mem_fun(*this, &BuddyListWin::on_treeview_keyed));
 	//buddyview_->set_reorderable();
 	
 	// Fill the TreeView's model
@@ -140,15 +153,25 @@ void BuddyListWin::createTreeModel() {
 }
 
 void BuddyListWin::on_treeview_clicked(GdkEventButton *event) {
+	ModelColumns m_Columns;
 	if (event->type == GDK_2BUTTON_PRESS) {
-		cout << "YAAY IT GOT DOUBLE CLICKY" << endl;
 		Glib::RefPtr<Gtk::TreeView::Selection> refSelection = buddyview_->get_selection();
-		if(refSelection)
-		{
+		if(refSelection) {
 			Gtk::TreeModel::iterator iter = refSelection->get_selected();
-			if(iter) {
-// 				Glib::ustring id = (*iter)[m_Columns.m_col_username];
-// 				std::cout << "  Selected ID=" << id << std::endl;
+			if(iter && (*iter)[m_Columns.m_col_id] != 0 && (*iter)[m_Columns.m_col_id] != 1) {
+				app_ptr_->appendPageConvoWin(iter);	
+			}
+		}
+	}
+}
+
+void BuddyListWin::on_treeview_keyed(GdkEventKey *event) {
+	ModelColumns m_Columns;
+	if (event->keyval == GDK_Return) {
+		Glib::RefPtr<Gtk::TreeView::Selection> refSelection = buddyview_->get_selection();
+		if(refSelection) {
+			Gtk::TreeModel::iterator iter = refSelection->get_selected();
+			if(iter && (*iter)[m_Columns.m_col_id] != 0 && (*iter)[m_Columns.m_col_id] != 1) {
 				app_ptr_->appendPageConvoWin(iter);	
 			}
 		}
@@ -188,7 +211,10 @@ void BuddyListWin::addBuddyToTree(int id, Glib::ustring username, Glib::ustring 
 		childrow[m_Columns.m_col_status] = "Offline";
 		childrow[m_Columns.m_col_id] = id;
 	}
+	if (app_ptr_->getConvoWin())
+		app_ptr_->getConvoWin()->updatePage(childrow);
 }
+
 bool BuddyListWin::onQueryTooltip(int x, int y, bool keyboard_tooltip, const Glib::RefPtr<Gtk::Tooltip>& tooltip) {
 	Gtk::TreeModel::Path path;
 	Gtk::TreeViewColumn* column;
@@ -257,8 +283,38 @@ void BuddyListWin::on_event_finish() {
 			onInviteRecieved();
 			break;
 		}
+		case GOT_MESSAGE: {
+			onMessageReceived();
+			break;
+		}
 		default:
 			break;
 	}
 	eventThread_->setType(NOT_SET);
+}
+
+Gtk::TreeIter &BuddyListWin::get_iter_at_username(Glib::ustring username) {
+	ModelColumns m_Columns;
+	
+	Gtk::TreeModel::Children children = online_row.children();
+	Gtk::TreeIter *i = new Gtk::TreeIter();
+	for (*i = children.begin(); *i != children.end(); (*i)++) {
+		if ((**i)[m_Columns.m_col_username] == username)
+			return *i;
+	}
+}
+
+void BuddyListWin::onMessageReceived() {
+	ModelColumns m_Columns;
+	vector<MessagePacket *> vector = client_->getMessageVector();
+	for (int i = 0; i < vector.size(); i++) {
+		MessagePacket *message = vector.at(i);
+		BuddyListEntry *entry = client_->getClient()->getBuddyList()->getBuddyBySid( message->getSid() );
+		Gtk::TreeIter &iter = get_iter_at_username(entry->username);
+		if (!app_ptr_->getConvoWin())
+			app_ptr_->createNewConvoWin();
+		app_ptr_->getConvoWin()->gotMessage(iter, message->getMessage());
+		delete message;
+	}
+	client_->clearMessageVector();
 }

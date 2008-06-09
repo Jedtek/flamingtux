@@ -17,11 +17,18 @@ class BadConversion : public std::runtime_error {
 		{ }
 };
  
-std::string stringify(int x)
-{
+std::string stringify(int x) {
 	std::ostringstream o;
 	if (!(o << x))
 		throw BadConversion("stringify(int)");
 	return o.str();
+}
+
+int intify(std::string x) {
+	std::istringstream o(x);
+	int a;
+	if (!(o >> a))
+		throw BadConversion("intify(string)");
+	return a;
 }
 
