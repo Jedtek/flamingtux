@@ -218,8 +218,12 @@ void ConvoWin::onSendButtonPressed(Gtk::VBox *vbox, Gtk::TreeModel::iterator &it
 	if (!buddy_entry->isOnline())
 		;// if user is offline do nothing
 	else {
-		if (client_->sendMessage(buddy_entry->username, text_view_input->get_buffer()->get_text()) == true)
-			updateTextView(text_view, client_->getUsername(), text_view_input->get_buffer()->get_text());
+		if (text_view_input->get_buffer()->get_text() == "")
+			;// do nothing
+		else {
+			if (client_->sendMessage(buddy_entry->username, text_view_input->get_buffer()->get_text()) == true)
+				updateTextView(text_view, client_->getUsername(), text_view_input->get_buffer()->get_text());
+		}
 		text_view_input->get_buffer()->set_text("");
 	}
 }
