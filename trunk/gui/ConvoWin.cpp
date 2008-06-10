@@ -104,8 +104,7 @@ void ConvoWin::onPageSwitched(GtkNotebookPage* page, guint page_num) {
 
 Gtk::Notebook_Helpers::PageIterator ConvoWin::appendPage(Gtk::TreeModel::iterator &iter) {
 	ModelColumns m_Columns;
-	
-	cout << (*iter)[m_Columns.m_col_id] << endl;
+
 	/* check if a convo is already opened for the user */
 	Gtk::Notebook_Helpers::PageIterator i = convonotebook_->pages().begin();
 	if (convonotebook_->get_n_pages()) {
@@ -132,10 +131,14 @@ Gtk::Notebook_Helpers::PageIterator ConvoWin::appendPage(Gtk::TreeModel::iterato
 	Gtk::Label *label_nick = new Gtk::Label((*iter)[m_Columns.m_col_nickname]);
 	label_id->set_label(stringify((*iter)[m_Columns.m_col_id]));
 	Gtk::ScrolledWindow *scrolled_win = new Gtk::ScrolledWindow();
+	scrolled_win->set_shadow_type(Gtk::SHADOW_IN);
 	Gtk::ScrolledWindow *scrolled_win2 = new Gtk::ScrolledWindow();
+	scrolled_win2->set_shadow_type(Gtk::SHADOW_IN);
 	Gtk::TextView *text_view = new Gtk::TextView();
 	text_view->set_editable(false);
+	text_view->set_wrap_mode(Gtk::WRAP_WORD);
 	Gtk::TextView *text_view2 = new Gtk::TextView();
+	text_view2->set_wrap_mode(Gtk::WRAP_WORD);
 	
 	/* create the page label with close button */
 	Gtk::HBox *page_hbox = Gtk::manage(new Gtk::HBox);
