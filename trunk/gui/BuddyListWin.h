@@ -31,6 +31,7 @@ class BuddyListWin : public Gtk::Window {
 		void OnInviteBtnClick(Gtk::Entry *invitesendwho_);
 		/* Like youll stop me :D */
 		void onStatusEntryChange();
+		virtual bool Logout(GdkEventAny *e);
 		bool onQueryTooltip(int x, int y, bool keyboard_tooltip, const Glib::RefPtr<Gtk::Tooltip>& tooltip);
 		Gtk::TreeIter &get_iter_at_username(Glib::ustring username);
 	private:

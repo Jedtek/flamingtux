@@ -10,7 +10,7 @@
 #include "BuddyListWin.h"
 #include "../Application.h"
 #include "../CommonFunctions.h"
-
+#include "../Main.cpp"
 #include <libglademm/xml.h>
 #include <gtkmm.h>
 
@@ -40,7 +40,7 @@ BuddyListWin::BuddyListWin(Glib::RefPtr<Gnome::Glade::Xml> refXml, Application *
 	// connect required signals
 	statusentry_->signal_key_release_event().connect_notify(sigc::mem_fun(*this, &BuddyListWin::onStatusEntryKeyRelease));
 	statuscombobox_->signal_changed().connect(sigc::mem_fun(*this, &BuddyListWin::onStatusEntryChange));
-	
+	buddylistwin_->signal_delete_event().connect(sigc::mem_fun(*this, &BuddyListWin::Logout));
 	// set default value
 	statusentry_->set_text("Online");
 	// remove the focus from the status entry widget
@@ -118,6 +118,13 @@ void BuddyListWin::OnInviteBtnClick(Gtk::Entry *invitesendwho_) {
 	InviteBuddyPacket *invite_sender = new InviteBuddyPacket();
 	invite_sender->InviteBuddyPacket::addInviteName(invitesendwho_->get_text(), "Add me.");
 	client_->getClient()->send(invite_sender);
+}
+bool BuddyListWin::Logout(GdkEventAny *e) {
+	/* finally log them out! */
+	client_->getClient()->disconnect();
+	/* quit the GUI and the main loop */
+	quit_all();
+	return true;
 }
 void BuddyListWin::createTreeModel() {
 	buddystore_ = Gtk::TreeStore::create(m_Columns);
