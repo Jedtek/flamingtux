@@ -35,6 +35,8 @@ LoginWin::LoginWin(Glib::RefPtr<Gnome::Glade::Xml> refXml, Application *app, Fir
 	if (!login_btn_)
 		throw std::runtime_error("Couldn't find login_btn");
 	
+	loginwin_->signal_delete_event().connect(sigc::mem_fun(*this, &LoginWin::onDeleteEvent));
+	
 	login_btn_->signal_clicked().connect(sigc::mem_fun(*this, &LoginWin::login_pressed));
 	
 	eventThread_ = new BEThread();
@@ -47,6 +49,24 @@ LoginWin::~LoginWin() {
 	user_entry_ = 0;
 	loginwin_ = 0;
 	delete eventThread_;
+}
+
+bool LoginWin::onDeleteEvent(GdkEventAny *e) {
+	Gtk::MessageDialog close_dialog(*this, "Quit FalmingTux", false, Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_YES_NO);
+	close_dialog.set_secondary_text("Are you sure you want to quit?");
+	int d_result = close_dialog.run();
+	switch(d_result) {
+		case(Gtk::RESPONSE_YES): {
+			app_ptr_->quit();
+			return false;
+			break;
+		}
+		case(Gtk::RESPONSE_NO): {
+			/* Do nothing and return true */
+			return true;
+			break;
+		}
+	}
 }
 
 void LoginWin::login_pressed() {

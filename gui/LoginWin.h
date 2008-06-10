@@ -30,6 +30,8 @@ class LoginWin : public Gtk::Window {
 		void eventLoginSuccess();
 		
 	private:
+		virtual bool onDeleteEvent(GdkEventAny *e);
+		
 		Gtk::Window *loginwin_;
 		Gtk::Entry *user_entry_;
 		Gtk::Entry *pass_entry_;

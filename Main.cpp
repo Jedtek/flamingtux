@@ -16,21 +16,18 @@ Then you should be good!
 #include <iostream>
 #include <stdexcept>
 #include <string>
-#include "Main.h"
+//#include "Main.h"
 #include "Application.h"
 #include <libglademm/xml.h>
 #include <gtkmm.h>
 
 using namespace std;
-void quit_all() {
-	Gtk::Main::quit();
-}
+
 int main(int argc, char *argv[]) {
 	Glib::thread_init();
 	Gtk::Main kit(argc, argv);
-	
-	Application fireapp = Application("gui/glade/flamingtux.glade");
-	fireapp.createNewLoginWin();
+	Application fireapp = Application(argc, argv, "gui/glade/flamingtux.glade");
+	fireapp.run();
 	kit.run();
 	return 0;
 }

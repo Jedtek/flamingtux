@@ -25,6 +25,7 @@ class ConvoWin : public Gtk::Window {
 		void gotMessage(Gtk::TreeIter &iter, Glib::ustring message);
 		void updatePage(Gtk::TreeModel::Row childrow);
 	private:
+		void onCloseMenuItem();
 		void updateStatusTextView(Gtk::TextView *text_view, Glib::ustring nickname, int status);
 		void closeTab(Gtk::VBox *notebook_vbox);
 		void onCloseTabClicked(Gtk::VBox *notebook_vbox);
@@ -41,6 +42,7 @@ class ConvoWin : public Gtk::Window {
 		Gtk::VBox *convowinvbox_;
 		Application *app_ptr_;
 		FireClient *client_;
+		Gtk::ImageMenuItem *close_widget_;
 		int windowMinimized;
 		int windowAbove;
 };

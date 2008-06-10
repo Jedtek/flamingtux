@@ -27,19 +27,21 @@ class BuddyListWin : public Gtk::Window {
 		void set_client(FireClient *client) { client_ = client; }
 		/* im just gunna shove my invite functions here :D - Jeed */
 		void onInviteRecieved();
-		void SendInvite();
-		void OnInviteBtnClick(Gtk::Entry *invitesendwho_);
 		/* Like youll stop me :D */
 		void onStatusEntryChange();
-		virtual bool Logout(GdkEventAny *e);
 		bool onQueryTooltip(int x, int y, bool keyboard_tooltip, const Glib::RefPtr<Gtk::Tooltip>& tooltip);
 		Gtk::TreeIter &get_iter_at_username(Glib::ustring username);
 	private:
+		void onInviteBtnClicked();
+		void onInviteMenuItemActivate();
+		void onQuitActivate();
+		virtual bool onDeleteEvent(GdkEventAny *e);
 		Glib::RefPtr<Gnome::Glade::Xml> refXml_;
 		Gtk::Window *buddylistwin_;
 		Gtk::Entry *statusentry_;
 		Gtk::ComboBoxEntry *statuscombobox_;
-		
+		Gtk::ImageMenuItem *quit_widget_;
+		Gtk::MenuItem *invite_buddy_widget_;
 		BEThread *eventThread_;
 		
 		ModelColumns m_Columns;
@@ -48,11 +50,12 @@ class BuddyListWin : public Gtk::Window {
 		Gtk::TreeModel::Row offline_row;
 		
 		Gtk::TreeView *buddyview_;
-		Glib::RefPtr<Gtk::TreeStore> buddystore_;
-
+		Glib::RefPtr<Gtk::TreeStore> buddystore_;	
+		
 		Gtk::Window *invitesendwin_;
 		Gtk::Entry *invitesendwho_;
-		Gtk::Button *invitesendbtn_;		
+		Gtk::Button *invitesendbtn_;
+		Gtk::Entry *invitesendmessage_;
 		
 		Application *app_ptr_;
 		FireClient *client_;

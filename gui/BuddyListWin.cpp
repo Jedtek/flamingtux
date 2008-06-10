@@ -10,7 +10,6 @@
 #include "BuddyListWin.h"
 #include "../Application.h"
 #include "../CommonFunctions.h"
-#include "../Main.cpp"
 #include <libglademm/xml.h>
 #include <gtkmm.h>
 
@@ -37,10 +36,34 @@ BuddyListWin::BuddyListWin(Glib::RefPtr<Gnome::Glade::Xml> refXml, Application *
 	if (!statuscombobox_)
 		throw std::runtime_error("Couldn't find StatusComboBox");
 	
+	refXml->get_widget("BuddyListWinQuit", quit_widget_);
+	if (!quit_widget_)
+		throw std::runtime_error("Couldn't find BuddyListWinQuit");
+	
+	refXml->get_widget("InviteBuddyBuddyListWin", invite_buddy_widget_);
+	if (!invite_buddy_widget_)
+		throw std::runtime_error("Couldn't find InviteBuddyBuddyListWin");
+	
+	refXml->get_widget("InviteSendWin", invitesendwin_);
+	if (!invitesendwin_)
+		throw std::runtime_error("Couldn't find InviteSendWin");
+	refXml->get_widget("InviteSendWho", invitesendwho_);
+	if (!invitesendwho_)
+		throw std::runtime_error("Couldn't find InviteSendWho");
+	refXml->get_widget("InviteSendMessage", invitesendmessage_);
+	if (!invitesendmessage_)
+		throw std::runtime_error("Couldn't find InviteSendMessage");
+	refXml->get_widget("InviteSendBtn", invitesendbtn_);
+	if (!invitesendbtn_)
+		throw std::runtime_error("Couldn't find InviteSendBtn");
+	invitesendbtn_->signal_clicked().connect(sigc::mem_fun(*this, &BuddyListWin::onInviteBtnClicked));
+	
 	// connect required signals
 	statusentry_->signal_key_release_event().connect_notify(sigc::mem_fun(*this, &BuddyListWin::onStatusEntryKeyRelease));
 	statuscombobox_->signal_changed().connect(sigc::mem_fun(*this, &BuddyListWin::onStatusEntryChange));
-	buddylistwin_->signal_delete_event().connect(sigc::mem_fun(*this, &BuddyListWin::Logout));
+	buddylistwin_->signal_delete_event().connect(sigc::mem_fun(*this, &BuddyListWin::onDeleteEvent));
+	quit_widget_->signal_activate().connect(sigc::mem_fun(*this, &BuddyListWin::onQuitActivate));
+	invite_buddy_widget_->signal_activate().connect(sigc::mem_fun(*this, &BuddyListWin::onInviteMenuItemActivate));
 	// set default value
 	statusentry_->set_text("Online");
 	// remove the focus from the status entry widget
@@ -68,6 +91,10 @@ void BuddyListWin::onStatusEntryKeyRelease(GdkEventKey* event) {
 		client_->getClient()->send( packet );
 		delete packet;
 	}
+}
+
+void BuddyListWin::onQuitActivate() {
+	onDeleteEvent(NULL);
 }
 
 void BuddyListWin::onStatusEntryChange() {
@@ -102,30 +129,53 @@ void BuddyListWin::onInviteRecieved() {
 		delete invite;
 		}
 	}
+	client_->clearInviteVector();
 }
-void BuddyListWin::SendInvite() {
+void BuddyListWin::onInviteMenuItemActivate() {
 	/* Lets spawn a funky window to get the username they want to add! 
 	 * Why dont gtk+/gtkmm implement a damn text entry dialouge, it'd be so much easier */
-	refXml_->get_widget("InviteSendWin", invitesendwin_);
-	refXml_->get_widget("InviteSendWho", invitesendwho_);
-	refXml_->get_widget("InviteSendBtn", invitesendbtn_);
-	invitesendbtn_->signal_clicked().connect( sigc::bind<1>(sigc::mem_fun(*this,         &BuddyListWin::OnInviteBtnClick), invitesendwho_));
+	invitesendwin_->show();
 
 }
-void BuddyListWin::OnInviteBtnClick(Gtk::Entry *invitesendwho_) {
-	string WhoToInvite = invitesendwho_->get_text();
-	cout << "we want to invite this bad boy: " << WhoToInvite << endl;
+
+void BuddyListWin::onInviteBtnClicked() {
+	Glib::ustring username = invitesendwho_->get_text();
+	Glib::ustring message = invitesendmessage_->get_text();
+	cout << "we want to invite this bad boy: " << username << endl;
 	InviteBuddyPacket *invite_sender = new InviteBuddyPacket();
-	invite_sender->InviteBuddyPacket::addInviteName(invitesendwho_->get_text(), "Add me.");
-	client_->getClient()->send(invite_sender);
+	invite_sender->addInviteName(username, message);
+	Gtk::MessageDialog dialog(*this, "Invite Buddy", false, Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_OK);
+	if(client_->getClient()->send(invite_sender))
+		dialog.set_secondary_text("Successfully invited " + username);
+	else
+		dialog.set_secondary_text("Error inviting " + username);	
+	dialog.run();
+	invitesendwin_->hide();
+	invitesendwho_->set_text("");
+	invitesendmessage_->set_text("");
+	delete invite_sender;
 }
-bool BuddyListWin::Logout(GdkEventAny *e) {
-	/* finally log them out! */
-	client_->getClient()->disconnect();
-	/* quit the GUI and the main loop */
-	quit_all();
-	return true;
+
+bool BuddyListWin::onDeleteEvent(GdkEventAny *e) {
+	Gtk::MessageDialog close_dialog(*this, "Quit FalmingTux", false, Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_YES_NO);
+	close_dialog.set_secondary_text("Are you sure you want to quit?");
+	int d_result = close_dialog.run();
+	switch(d_result) {
+		case(Gtk::RESPONSE_YES): {
+			int i;
+			client_->getClient()->disconnect();
+			app_ptr_->quit();
+			return false;
+			break;
+		}
+		case(Gtk::RESPONSE_NO): {
+			/* Do nothing and return true */
+			return true;
+			break;
+		}
+	}
 }
+
 void BuddyListWin::createTreeModel() {
 	buddystore_ = Gtk::TreeStore::create(m_Columns);
 	buddyview_->set_model(buddystore_);
