@@ -1,8 +1,7 @@
 /* FlamingTux 
  * Authors: peacey, jeed890 
  * http://flamingtux.googlecode.com 
- * This code is GPL, licensing soon though ;) */
-
+ *  This code is protected by GPLv3, please see LICENSE file for more information */
 // Includes
 #include "FireClient.h"
 #include "common.h"
