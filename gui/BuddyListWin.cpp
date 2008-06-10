@@ -142,10 +142,11 @@ void BuddyListWin::onInviteBtnClicked() {
 	Glib::ustring username = invitesendwho_->get_text();
 	Glib::ustring message = invitesendmessage_->get_text();
 	cout << "we want to invite this bad boy: " << username << endl;
-	InviteBuddyPacket *invite_sender = new InviteBuddyPacket();
-	invite_sender->addInviteName(username, message);
+	InviteBuddyPacket invite_sender;
+	invite_sender.addInviteName(username, message);
+	int ireturn = client_->getClient()->send(&invite_sender);
 	Gtk::MessageDialog dialog(*this, "Invite Buddy", false, Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_OK);
-	if(client_->getClient()->send(invite_sender))
+	if (ireturn)
 		dialog.set_secondary_text("Successfully invited " + username);
 	else
 		dialog.set_secondary_text("Error inviting " + username);	
@@ -153,7 +154,6 @@ void BuddyListWin::onInviteBtnClicked() {
 	invitesendwin_->hide();
 	invitesendwho_->set_text("");
 	invitesendmessage_->set_text("");
-	delete invite_sender;
 }
 
 bool BuddyListWin::onDeleteEvent(GdkEventAny *e) {
