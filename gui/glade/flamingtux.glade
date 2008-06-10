@@ -265,6 +265,7 @@ In-Game</property>
   <widget class="GtkWindow" id="ConvoWin">
     <property name="width_request">500</property>
     <property name="height_request">450</property>
+    <property name="icon">flamingtux_icon.png</property>
     <child>
       <widget class="GtkVBox" id="ConvoWinVBox">
         <property name="visible">True</property>
@@ -354,6 +355,7 @@ In-Game</property>
   <widget class="GtkWindow" id="InviteSendWin">
     <property name="title" translatable="yes">InviteSendWin</property>
     <property name="window_position">GTK_WIN_POS_CENTER_ON_PARENT</property>
+    <property name="icon">flamingtux_icon.png</property>
     <child>
       <widget class="GtkVBox" id="vbox4">
         <property name="visible">True</property>
@@ -407,6 +409,7 @@ In-Game</property>
             <property name="receives_default">True</property>
             <property name="label" translatable="yes">Invite</property>
             <property name="response_id">0</property>
+            <accelerator key="Return" modifiers="" signal="activate"/>
           </widget>
           <packing>
             <property name="position">2</property>
