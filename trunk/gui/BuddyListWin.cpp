@@ -327,7 +327,6 @@ void BuddyListWin::eventUpdateBuddyList() {
 }
 
 void BuddyListWin::on_event_finish() {
-	eventThread_->finish();
 	cout << "--------------------------------------------" << endl;
 	cout << "FINISHING EVENT BUDDYLIST" << endl;
 	cout << "--------------------------------------------" << endl;
@@ -348,6 +347,7 @@ void BuddyListWin::on_event_finish() {
 			break;
 	}
 	eventThread_->setType(NOT_SET);
+	eventThread_->finish();
 }
 
 Gtk::TreeIter &BuddyListWin::get_iter_at_username(Glib::ustring username) {
