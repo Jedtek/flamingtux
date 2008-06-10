@@ -6,6 +6,7 @@
 #include <stdexcept>
 #include <string>
 #include <sstream>
+#include <ctime>
 
 #include "ConvoWin.h"
 
@@ -20,7 +21,7 @@ using namespace xfirelib;
 using namespace xfireclient;
 
 ConvoWin::ConvoWin(Glib::RefPtr<Gnome::Glade::Xml> refXml, Application *app, FireClient *client)
-	: convowin_(0) {
+	: convowin_(0), windowMinimized(0), windowAbove(0) {
 	app_ptr_ = app;
 	client_ = client;
 	refXml_ = refXml;
@@ -32,7 +33,8 @@ ConvoWin::ConvoWin(Glib::RefPtr<Gnome::Glade::Xml> refXml, Application *app, Fir
 	if (!convowinvbox_)
 		throw std::runtime_error("Couldn't find ConvoWinVBox");
 	
-	convowin_->signal_delete_event().connect_notify(sigc::mem_fun(*this, &ConvoWin::onDeleteEvent));
+	convowin_->signal_delete_event().connect(sigc::mem_fun(*this, &ConvoWin::onDeleteEvent));
+	convowin_->signal_window_state_event().connect_notify(sigc::mem_fun(*this, &ConvoWin::onWindowStateEvent));
 	
 	convonotebook_ = new Gtk::Notebook();
 	convowinvbox_->pack_end(*convonotebook_, true, true, 0);
@@ -44,12 +46,36 @@ ConvoWin::~ConvoWin() {
 	
 }
 
-void ConvoWin::onDeleteEvent(GdkEventAny *e) {
-	int i;
-	Gtk::VBox *vbox;
-	for(i = 0; i != convonotebook_->get_n_pages(); ) {
-		vbox = (Gtk::VBox *) (convonotebook_->get_nth_page(i));
-		closeTab(vbox);
+void ConvoWin::onWindowStateEvent(GdkEventWindowState* event) {
+	if (event->new_window_state == GDK_WINDOW_STATE_ICONIFIED)
+		windowMinimized = 1;
+	else {
+		windowMinimized = 0;
+		convowin_->set_urgency_hint(false);
+	}
+}
+
+bool ConvoWin::onDeleteEvent(GdkEventAny *e) {
+	
+	Gtk::MessageDialog close_dialog(*this, "Close tabs", false, Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_YES_NO);
+	close_dialog.set_secondary_text("Are you sure you want to close all opened tabs?");
+	int d_result = close_dialog.run();
+	switch(d_result) {
+		case(Gtk::RESPONSE_YES): {
+			int i;
+			Gtk::VBox *vbox;
+			for(i = 0; i != convonotebook_->get_n_pages(); ) {
+				vbox = (Gtk::VBox *) (convonotebook_->get_nth_page(i));
+				closeTab(vbox);
+			}
+			return false;
+			break;
+		}
+		case(Gtk::RESPONSE_NO): {
+			/* Do nothing and return true */
+			return true;
+			break;
+		}
 	}
 }
 
@@ -63,12 +89,14 @@ void ConvoWin::onPageSwitched(GtkNotebookPage* page, guint page_num) {
 	Gtk::Label *label = dynamic_cast<Gtk::Label *>((hbox->children().begin())->get_widget());
 	//Gtk::Label *label = dynamic_cast<Gtk::Label *>(*(eb->get_children().begin()));
 	label->set_markup(label->get_text());
+	convowin_->set_urgency_hint(false);
+	convowin_->set_title(label->get_text());
 }
 
 Gtk::Notebook_Helpers::PageIterator ConvoWin::appendPage(Gtk::TreeModel::iterator &iter) {
 	ModelColumns m_Columns;
 	
-	cout << (*iter)[m_Columns.m_col_nickname] << endl;
+	cout << (*iter)[m_Columns.m_col_id] << endl;
 	/* check if a convo is already opened for the user */
 	Gtk::Notebook_Helpers::PageIterator i = convonotebook_->pages().begin();
 	if (convonotebook_->get_n_pages()) {
@@ -191,43 +219,75 @@ void ConvoWin::updateTextView(Gtk::TextView *text_view, Glib::ustring nickname, 
 		refTagMatch->property_foreground() = "dark grey";
 	}
 	
+	time_t rawtime;
+	struct tm * timeinfo;
+	char buffer [15];
+
+	time ( &rawtime );
+	timeinfo = localtime ( &rawtime );
+
+	strftime (buffer, 15, "[%I:%M:%S %p]", timeinfo);
+	
+	string x(buffer);
 	//BuddyListEntry *buddy_entry = client_->getClient()->getBuddyList->getBuddyById(intify(label_id->get_text()))
-	refBuffer->insert_with_tag(refBuffer->end(), "\n" + nickname + " says :", "foreground");
+	refBuffer->insert_with_tag(refBuffer->end(), '\n' + x + ' ' + nickname + " says :", "foreground");
 	refBuffer->insert(refBuffer->end(), "\n" + text);
 // 	Glib::RefPtr<Gtk::TextBuffer::TagTable> refTagTable = Gtk::TextBuffer::TagTable::create();
 // 	refTagTable->add(refTagMatch);
+}
+
+void ConvoWin::updateStatusTextView(Gtk::TextView *text_view, Glib::ustring nickname, int status) {
+	Glib::RefPtr<Gtk::TextBuffer> refBuffer = text_view->get_buffer();
+	
+	if (!refBuffer->get_tag_table()->lookup("status")) {
+		Glib::RefPtr<Gtk::TextBuffer::Tag> refTagMatch = refBuffer->create_tag("status");
+		refTagMatch->property_foreground() = "dark red";
+		refTagMatch->property_style() = Pango::STYLE_OBLIQUE;
+	}
+	if (status)
+		refBuffer->insert_with_tag(refBuffer->end(), "\n<" + nickname + "is now Online>", "status");
+	else
+		refBuffer->insert_with_tag(refBuffer->end(), "\n<" + nickname + "is now Offline>", "status");
 }
 
 void ConvoWin::updatePage(Gtk::TreeModel::Row childrow) {
 	ModelColumns m_Columns;
 	
 	Gtk::Notebook_Helpers::PageIterator i;
-	Gtk::VBox *vbox;
 	Gtk::Box_Helpers::BoxList::iterator bi;
+	Gtk::VBox *vbox;
 	Gtk::Label *label_id;
 	if (convonotebook_->get_n_pages()) {
-		for(i = convonotebook_->pages().begin(); i != convonotebook_->pages().end(); i++) {
+		for (i = convonotebook_->pages().begin(); i != convonotebook_->pages().end(); i++) {
 			vbox = dynamic_cast<Gtk::VBox*>(i->get_child());
-			bi = vbox->children().begin();
+			bi = vbox->children().begin();;
 			label_id = dynamic_cast<Gtk::Label*>(bi->get_widget());
-			if (label_id->get_text() == stringify(childrow[m_Columns.m_col_id]))
+			if (intify(label_id->get_text()) == childrow[m_Columns.m_col_id]) {
 				break;
+			}
 		}
-		Gtk::Label *label_nick = dynamic_cast<Gtk::Label*>((++bi)->get_widget());
-		Gtk::Label *label = dynamic_cast<Gtk::Label*>((++bi)->get_widget());
-		Gtk::ScrolledWindow *scrolled_win = dynamic_cast<Gtk::ScrolledWindow*>((++bi)->get_widget());
-		Gtk::HBox *entry_hbox = dynamic_cast<Gtk::HBox*>((++bi)->get_widget());
-		Gtk::ScrolledWindow *scrolled_win2 = dynamic_cast<Gtk::ScrolledWindow*>((entry_hbox->children().begin())->get_widget());
-		Gtk::TextView *text_view2 = dynamic_cast<Gtk::TextView*>(*(scrolled_win2->get_children().begin()));
-		label_nick->set_text(childrow[m_Columns.m_col_nickname]);
-		label->set_text("To: " + childrow[m_Columns.m_col_nickname] + " <" + childrow[m_Columns.m_col_status] + '>');
-		if (childrow[m_Columns.m_col_status] == "Offline") {
-			text_view2->get_buffer()->set_text("The user is currently offline");
-			text_view2->set_sensitive(false);
-		}
+		if (i == convonotebook_->pages().end())
+			;// do nothing
 		else {
-			text_view2->get_buffer()->set_text("");
-			text_view2->set_sensitive(true);
+			Gtk::Label *label_nick = dynamic_cast<Gtk::Label*>((++bi)->get_widget());
+			Gtk::Label *label = dynamic_cast<Gtk::Label*>((++bi)->get_widget());
+			Gtk::ScrolledWindow *scrolled_win = dynamic_cast<Gtk::ScrolledWindow*>((++bi)->get_widget());
+			Gtk::TextView *text_view = dynamic_cast<Gtk::TextView*>(*(scrolled_win->get_children().begin()));
+			Gtk::HBox *entry_hbox = dynamic_cast<Gtk::HBox*>((++bi)->get_widget());
+			Gtk::ScrolledWindow *scrolled_win2 = dynamic_cast<Gtk::ScrolledWindow*>((entry_hbox->children().begin())->get_widget());
+			Gtk::TextView *text_view2 = dynamic_cast<Gtk::TextView*>(*(scrolled_win2->get_children().begin()));
+			label_nick->set_text(childrow[m_Columns.m_col_nickname]);
+			label->set_text("To: " + childrow[m_Columns.m_col_nickname] + " <" + childrow[m_Columns.m_col_status] + '>');
+			if (childrow[m_Columns.m_col_status] == "Offline") {
+				//updateStatusTextView(text_view, childrow[m_Columns.m_col_nickname], 0);
+				text_view2->get_buffer()->set_text("The user is currently offline");
+				text_view2->set_sensitive(false);
+			}
+			else {
+				//updateStatusTextView(text_view, childrow[m_Columns.m_col_nickname], 1);
+				text_view2->get_buffer()->set_text("");
+				text_view2->set_sensitive(true);
+			}
 		}
 	}
 	
@@ -266,9 +326,11 @@ void ConvoWin::gotMessage(Gtk::TreeIter &iter, Glib::ustring message) {
 		Gtk::Label *label = dynamic_cast<Gtk::Label *>((hbox->children().begin())->get_widget());
 // 		Gtk::Label *label = dynamic_cast<Gtk::Label *>(*(eb->get_children().begin()));
 		label->set_markup("<b><span color='Red'>" + label->get_text() + "</span></b>");
+		convowin_->set_urgency_hint(true);
 	}
-	
-	//convowin_->set_urgency_hint(true);
+	if (windowMinimized) {
+		convowin_->set_urgency_hint(true);
+	}
 }
 
 void ConvoWin::onCloseTabClicked(Gtk::VBox *notebook_vbox) {

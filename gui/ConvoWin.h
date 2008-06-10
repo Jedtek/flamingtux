@@ -25,9 +25,11 @@ class ConvoWin : public Gtk::Window {
 		void gotMessage(Gtk::TreeIter &iter, Glib::ustring message);
 		void updatePage(Gtk::TreeModel::Row childrow);
 	private:
+		void updateStatusTextView(Gtk::TextView *text_view, Glib::ustring nickname, int status);
 		void closeTab(Gtk::VBox *notebook_vbox);
 		void onCloseTabClicked(Gtk::VBox *notebook_vbox);
-		void onDeleteEvent(GdkEventAny *e);
+		virtual bool onDeleteEvent(GdkEventAny *e);
+		void onWindowStateEvent(GdkEventWindowState* event);
 		void onPageRemoved(Gtk::Widget* page, guint page_num);
 		void onPageSwitched(GtkNotebookPage* page, guint page_num);
 		void onSendButtonPressed(Gtk::VBox *vbox, Gtk::TreeModel::iterator &iter);
@@ -39,6 +41,8 @@ class ConvoWin : public Gtk::Window {
 		Gtk::VBox *convowinvbox_;
 		Application *app_ptr_;
 		FireClient *client_;
+		int windowMinimized;
+		int windowAbove;
 };
 
 #endif
