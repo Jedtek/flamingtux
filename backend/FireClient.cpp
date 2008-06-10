@@ -136,6 +136,7 @@ namespace xfireclient {
 				cout << "ANN INVIIIIIIIIITEEEEEE" << endl;
 				inviteVector.push_back(copy_invite);
 				Glib::signal_idle().connect(sigc::bind<1>(sigc::bind_return(sigc::mem_fun(*this, &FireClient::launchThread), false), INVITE_REQUEST)); /* Call to buddylist spawn shit */
+				break;
 			}
 			
 			case XFIRE_BUDDYS_NAMES_ID: {
