@@ -112,7 +112,7 @@ namespace xfireclient {
 				for(uint i = 0 ; i < status->sids->size() ; i++) {
 					BuddyListEntry *entry = client_->getBuddyList()->getBuddyBySid( status->sids->at(i) );
 					if(entry == NULL) {
-						XERROR(( "No such Entry - Got StatusMessage from someone who is not in the buddylist ??\n" ));
+// 						XERROR(( "No such Entry - Got StatusMessage from someone who is not in the buddylist ??\n" ));
 						return;
 					}
 					cout << entry->username << " changed status to: " << status->msgs->at(i) << endl;
