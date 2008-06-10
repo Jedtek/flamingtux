@@ -34,6 +34,7 @@ namespace xfireclient {
 			vector<InviteRequestPacket *> getInviteVector() { return inviteVector; }
 			vector<MessagePacket *> getMessageVector() { return messageVector; }
 			void clearMessageVector() { messageVector.clear(); }
+			void clearInviteVector() { inviteVector.clear(); }
 			bool sendMessage(Glib::ustring recepient, Glib::ustring message);
 		private:
 			Client *client_;

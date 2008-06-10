@@ -17,10 +17,11 @@ using namespace std;
 
 class Application {
 	public:
-		Application(string path);
+		Application(int argc, char *argv[], string path);
 		~Application();
 		
-		void getLoginWin();
+		void run();
+		void quit();
 		BuddyListWin *getBuddyListWin() { return buddyListWindow; }
 		ConvoWin *getConvoWin() { return convoWindow; }
 		void createBuddyListWin();
@@ -31,6 +32,7 @@ class Application {
 		void createNewConvoWin();
 		Gtk::Notebook_Helpers::PageIterator appendPageConvoWin(Gtk::TreeModel::iterator &iter);
 	private:
+		Gtk::Main *kit;
 		Glib::RefPtr<Gnome::Glade::Xml> refXml_;
 		FireClient *client_;
 		

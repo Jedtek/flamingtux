@@ -32,7 +32,11 @@ ConvoWin::ConvoWin(Glib::RefPtr<Gnome::Glade::Xml> refXml, Application *app, Fir
 	refXml->get_widget("ConvoWinVBox", convowinvbox_);
 	if (!convowinvbox_)
 		throw std::runtime_error("Couldn't find ConvoWinVBox");
+	refXml->get_widget("ConvoWinCloseMenuItem", close_widget_);
+	if (!close_widget_)
+		throw std::runtime_error("Couldn't find ConvoWinCloseMenuItem");
 	
+	close_widget_->signal_activate().connect(sigc::mem_fun(*this, &ConvoWin::onCloseMenuItem));
 	convowin_->signal_delete_event().connect(sigc::mem_fun(*this, &ConvoWin::onDeleteEvent));
 	convowin_->signal_window_state_event().connect_notify(sigc::mem_fun(*this, &ConvoWin::onWindowStateEvent));
 	
@@ -45,6 +49,10 @@ ConvoWin::ConvoWin(Glib::RefPtr<Gnome::Glade::Xml> refXml, Application *app, Fir
 
 ConvoWin::~ConvoWin() {
 	
+}
+
+void ConvoWin::onCloseMenuItem() {
+	onDeleteEvent(NULL);	
 }
 
 void ConvoWin::onWindowStateEvent(GdkEventWindowState* event) {
@@ -139,8 +147,9 @@ Gtk::Notebook_Helpers::PageIterator ConvoWin::appendPage(Gtk::TreeModel::iterato
 	Gtk::Button *page_button = Gtk::manage(new Gtk::Button);
 	Gtk::Image *image = Gtk::manage(new Gtk::Image(Gtk::Stock::CLOSE, Gtk::ICON_SIZE_MENU)); 
 	page_button->add(*image); 
-	page_button->signal_clicked().
-	connect(sigc::bind<Gtk::VBox*>(sigc::mem_fun(*this, &ConvoWin::onCloseTabClicked), notebook_vbox) ); 
+	page_button->signal_clicked().connect(sigc::bind<Gtk::VBox*>(sigc::mem_fun(*this, &ConvoWin::onCloseTabClicked), notebook_vbox) );
+	page_button->add_accelerator("clicked", convowin_->get_accel_group(), 'w', 
+				   Gdk::CONTROL_MASK, Gtk::ACCEL_VISIBLE);
 	page_hbox->pack_start(*page_button, Gtk::PACK_SHRINK);
 	
 	scrolled_win->set_policy(Gtk::POLICY_NEVER, Gtk::POLICY_AUTOMATIC);

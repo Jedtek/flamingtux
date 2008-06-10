@@ -14,9 +14,10 @@
 
 using namespace std;
 
-Application::Application(string path) 
+Application::Application(int argc, char *argv[], string path) 
 	: loginWindow(0), buddyListWindow(0), convoWindow(0), client_(0) {
 	refXml_ = Gnome::Glade::Xml::create(path);
+	
 	//client_ = new FireClient();
 // 	convoWindow = new ConvoWin(refXml_, this, client_);
 // 	convoWindow->get_window().hide();
@@ -31,18 +32,9 @@ Application::~Application() {
 		delete buddyListWindow;
 }
 
-// void Application::createNewClient() {
-// 	if (client_)
-// 		delete client_;
-// 	client_ = new FireClient();
-// 	loginWindow->setClient(client_);	
-// }
-
-// void Application::getLoginWin() {
-// 	client_ = new FireClient();
-// 	loginWindow = new LoginWin(refXml_, this, client_);
-// 	loginWindow->get_window().show();
-// }
+void Application::run() {
+	createNewLoginWin();
+}
 
 void Application::createNewLoginWin() {
 	if (loginWindow)
@@ -81,3 +73,6 @@ Gtk::Notebook_Helpers::PageIterator Application::appendPageConvoWin(Gtk::TreeMod
 	return convoWindow->appendPage(iter);
 }
 
+void Application::quit() {
+	Gtk::Main::quit();
+}
