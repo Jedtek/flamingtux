@@ -324,6 +324,7 @@ void BuddyListWin::eventUpdateBuddyList() {
 	}
 	online_row[m_Columns.m_col_nickname_rendered] = "<b>Online (" + stringify(noOfOnlineEntries) + ")</b>";
 	offline_row[m_Columns.m_col_nickname_rendered] = "<b>Offline (" + stringify(entries->size() - noOfOnlineEntries) + ")</b>";
+	buddyview_->expand_all();
 }
 
 void BuddyListWin::on_event_finish() {

@@ -99,7 +99,7 @@ void ConvoWin::onPageSwitched(GtkNotebookPage* page, guint page_num) {
 	//Gtk::Label *label = dynamic_cast<Gtk::Label *>(*(eb->get_children().begin()));
 	label->set_markup(label->get_text());
 	convowin_->set_urgency_hint(false);
-	convowin_->set_title(label->get_text());
+	convowin_->set_title(label->get_text() + " - Chat");
 }
 
 Gtk::Notebook_Helpers::PageIterator ConvoWin::appendPage(Gtk::TreeModel::iterator &iter) {
