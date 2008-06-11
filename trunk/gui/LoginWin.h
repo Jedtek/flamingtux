@@ -30,6 +30,7 @@ class LoginWin : public Gtk::Window {
 		void eventLoginSuccess();
 		
 	private:
+		sigc::connection c;
 		virtual bool onDeleteEvent(GdkEventAny *e);
 		
 		Gtk::Window *loginwin_;

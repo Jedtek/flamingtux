@@ -14,20 +14,23 @@ namespace xfireclient {
 	using namespace xfirelib;
 	
 	FireClient::FireClient(string username, string password)
-		: username_(username), password_(password) {
+		: username_(username), password_(password), client_(0) {
 		
 		client_ = new Client();
+		//cout << "ALALALALALAA " << client_ << endl;
+		//client_ = 0;
 		loginStatus_ = 0;
 	}
 	
 	FireClient::FireClient()
-	: username_(""), password_("") {
+	: username_(""), password_(""), client_(0) {
 		
 		client_ = new Client();
 		loginStatus_ = 0;
 	}
 	
 	FireClient::~FireClient() {
+		//client_->disconnect();
 		delete client_;
 	}
 	
@@ -36,10 +39,13 @@ namespace xfireclient {
 	void FireClient::run() {
 		if (username_ == "" || password_ == "")
 			cout << "Username or password null!" << endl;
-		client_->connect(username_, password_);
-		client_->addPacketListener(this);
-		/* start the eternal while loop for test purposes*/
-		//while (1) { };
+		else {
+			//client_ = new Client();
+			client_->connect(username_, password_);
+			client_->addPacketListener(this);
+			/* start the eternal while loop for test purposes*/
+			//while (1) { };
+		}
 	}
 	
 	void FireClient::launchThread(event_type type) {
@@ -54,8 +60,8 @@ namespace xfireclient {
 				Glib::signal_idle().connect(
 						sigc::bind<1>(sigc::bind_return(sigc::mem_fun(*this, &FireClient::launchThread), false), LOGIN_FAILED));
 				loginStatus_ = 0;
-				client_->disconnect();
-				delete client_;
+ 				client_->disconnect();
+ 				delete client_;
 				client_ = 0;
 				break;
 			}
@@ -64,7 +70,7 @@ namespace xfireclient {
  				Glib::signal_idle().connect(
 				sigc::bind<1>(sigc::bind_return(sigc::mem_fun(*this, &FireClient::launchThread), false), LOGIN_SUCCESS));
 				loginStatus_ = 1;
-				break;	
+				break;
 			}
 			case XFIRE_MESSAGE_ID: {
 				cout << "Got Message." << endl;

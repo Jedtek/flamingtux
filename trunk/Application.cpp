@@ -24,8 +24,8 @@ Application::Application(int argc, char *argv[], string path)
 }
 
 Application::~Application() {
-	if (client_)
-		delete client_;
+// 	if (client_)
+// 		delete client_;
 	if (loginWindow)
 		delete loginWindow;
 	if (buddyListWindow)
@@ -74,5 +74,10 @@ Gtk::Notebook_Helpers::PageIterator Application::appendPageConvoWin(Gtk::TreeMod
 }
 
 void Application::quit() {
+// 	if (loginWindow)
+// 		delete loginWindow;
+// 	if (client_)
+// 		delete client_;
+	//delete client_;
 	Gtk::Main::quit();
 }

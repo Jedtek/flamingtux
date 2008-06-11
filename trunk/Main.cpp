@@ -29,6 +29,7 @@ int main(int argc, char *argv[]) {
 	Application fireapp = Application(argc, argv, "gui/glade/flamingtux.glade");
 	fireapp.run();
 	kit.run();
+	cout << "Exitting..." << endl;
 	return 0;
 }
 
