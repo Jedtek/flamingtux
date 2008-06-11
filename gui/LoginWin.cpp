@@ -18,7 +18,7 @@ using namespace xfirelib;
 //using namespace xfireclient;
 
 LoginWin::LoginWin(Glib::RefPtr<Gnome::Glade::Xml> refXml, Application *app, FireClient *client)
-	: loginwin_(0), user_entry_(0), pass_entry_(0), refXml_(refXml) {
+	: loginwin_(0), user_entry_(0), pass_entry_(0), refXml_(refXml), eventThread_(0) {
 	app_ptr_ = app;
 	client_ = client;
 	
@@ -38,16 +38,15 @@ LoginWin::LoginWin(Glib::RefPtr<Gnome::Glade::Xml> refXml, Application *app, Fir
 	loginwin_->signal_delete_event().connect(sigc::mem_fun(*this, &LoginWin::onDeleteEvent));
 	
 	login_btn_->signal_clicked().connect(sigc::mem_fun(*this, &LoginWin::login_pressed));
-	
 	eventThread_ = new BEThread();
 	eventThread_->signal_finished().connect(sigc::mem_fun(*this, &LoginWin::on_event_finish));
 }
 
 LoginWin::~LoginWin() {
-	login_btn_ = 0;
-	pass_entry_ = 0;
-	user_entry_ = 0;
-	loginwin_ = 0;
+//  	login_btn_ = 0;
+//  	pass_entry_ = 0;
+//  	user_entry_ = 0;
+//  	loginwin_ = 0;
 	delete eventThread_;
 }
 
@@ -70,6 +69,11 @@ bool LoginWin::onDeleteEvent(GdkEventAny *e) {
 }
 
 void LoginWin::login_pressed() {
+// 	if (eventThread_) {
+// 		//c.disconnect();
+// 		delete eventThread_;
+// 	}
+// 	eventThread_ = new BEThread();
 	// First time we are going to run client, so we have to create a new one
 	client_->setUsername(user_entry_->get_text());
 	client_->setPassword(pass_entry_->get_text());
@@ -82,6 +86,9 @@ void LoginWin::eventLoginFailed() {
 	dialog.set_secondary_text("Please check username/password");
 	dialog.run();
 	//app_ptr_->createNewLoginWin();
+	//client_->getClient()->disconnect();
+	//delete client_->getClient();
+	app_ptr_->run();
 }
 
 void LoginWin::eventLoginSuccess() {
