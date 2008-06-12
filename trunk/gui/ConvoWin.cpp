@@ -297,12 +297,12 @@ void ConvoWin::updatePage(Gtk::TreeModel::Row childrow) {
 			label->set_text("To: " + childrow[m_Columns.m_col_nickname] + " <" + childrow[m_Columns.m_col_status] + '>');
 			if (childrow[m_Columns.m_col_status] == "Offline") {
 				//updateStatusTextView(text_view, childrow[m_Columns.m_col_nickname], 0);
-				text_view2->get_buffer()->set_text("The user is currently offline");
+				//text_view2->get_buffer()->set_text(offline_msg);
 				text_view2->set_sensitive(false);
 			}
 			else {
 				//updateStatusTextView(text_view, childrow[m_Columns.m_col_nickname], 1);
-				text_view2->get_buffer()->set_text("");
+				//text_view2->get_buffer()->set_text("");
 				text_view2->set_sensitive(true);
 			}
 		}

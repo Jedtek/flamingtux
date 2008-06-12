@@ -25,6 +25,7 @@ class ConvoWin : public Gtk::Window {
 		void gotMessage(Gtk::TreeIter &iter, Glib::ustring message);
 		void updatePage(Gtk::TreeModel::Row childrow);
 	private:
+		//Glib::ustring offline_msg = "The user is currently offline";
 		void onCloseMenuItem();
 		void updateStatusTextView(Gtk::TextView *text_view, Glib::ustring nickname, int status);
 		void closeTab(Gtk::VBox *notebook_vbox);
