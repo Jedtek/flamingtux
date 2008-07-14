@@ -30,9 +30,9 @@ class LoginWin : public Gtk::Window {
 		void eventLoginSuccess();
 		
 	private:
-		sigc::connection c;
+		sigc::connection *c;
 		virtual bool onDeleteEvent(GdkEventAny *e);
-		int createUserDirectoryStructure(Glib::ustring username, Glib::ustring ft_directory);
+		
 		Gtk::Window *loginwin_;
 		Gtk::Entry *user_entry_;
 		Gtk::Entry *pass_entry_;

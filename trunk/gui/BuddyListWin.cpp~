@@ -40,15 +40,8 @@ BuddyListWin::BuddyListWin(Glib::RefPtr<Gnome::Glade::Xml> refXml, Application *
 	if (!quit_widget_)
 		throw std::runtime_error("Couldn't find BuddyListWinQuit");
 	
-	refXml->get_widget("LogOutMenuItem", log_out_mi_);
-	if (!log_out_mi_)
-		throw std::runtime_error("Couldn't find LogOutMenuItem");
-	refXml->get_widget("RehashConfigMenuItem", rehash_config_mi_);
-	if (!rehash_config_mi_)
-		throw std::runtime_error("Couldn't find RehashConfigMenuItem");
-	
-	refXml->get_widget("InviteBuddyBuddyListWin", invite_buddy_mi_);
-	if (!invite_buddy_mi_)
+	refXml->get_widget("InviteBuddyBuddyListWin", invite_buddy_widget_);
+	if (!invite_buddy_widget_)
 		throw std::runtime_error("Couldn't find InviteBuddyBuddyListWin");
 	
 	refXml->get_widget("InviteSendWin", invitesendwin_);
@@ -70,9 +63,7 @@ BuddyListWin::BuddyListWin(Glib::RefPtr<Gnome::Glade::Xml> refXml, Application *
 	statuscombobox_->signal_changed().connect(sigc::mem_fun(*this, &BuddyListWin::onStatusEntryChange));
 	buddylistwin_->signal_delete_event().connect(sigc::mem_fun(*this, &BuddyListWin::onDeleteEvent));
 	quit_widget_->signal_activate().connect(sigc::mem_fun(*this, &BuddyListWin::onQuitActivate));
-	invite_buddy_mi_->signal_activate().connect(sigc::mem_fun(*this, &BuddyListWin::onInviteMenuItemActivate));
-	log_out_mi_->signal_activate().connect(sigc::mem_fun(*this, &BuddyListWin::onLogOutMenuItemActivate));
-	rehash_config_mi_->signal_activate().connect(sigc::mem_fun(*this, &BuddyListWin::onRehashConfigMenuItemActivate));
+	invite_buddy_widget_->signal_activate().connect(sigc::mem_fun(*this, &BuddyListWin::onInviteMenuItemActivate));
 	// set default value
 	statusentry_->set_text("Online");
 	// remove the focus from the status entry widget
@@ -109,8 +100,6 @@ BuddyListWin::~BuddyListWin() {
 void BuddyListWin::onStatusEntryKeyRelease(GdkEventKey* event) {
 	if (event->keyval == GDK_Return) {
 		cout << "Changing status..." << endl;
-		if (app_ptr_->checkConfigLogOption(app_ptr_->getConfig()->getConfigOptions()->getLogStatusChange()))
-			app_ptr_->getLog()->writeLog("Status changed to: " + statusentry_->get_text());
 		SendStatusMessagePacket *packet = new SendStatusMessagePacket();
 		packet->awaymsg = statusentry_->get_text();
 		client_->getClient()->send( packet );
@@ -145,41 +134,29 @@ void BuddyListWin::onPopupMenuRemoveBuddyClicked() {
 		Gtk::TreeModel::iterator iter = refSelection->get_selected();
 		if(iter && (*iter)[m_Columns.m_col_id] != 0 && (*iter)[m_Columns.m_col_id] != 1) {
 			
-			Gtk::MessageDialog *buddy_remove_dialog = new Gtk::MessageDialog(*this, "Remove Buddy:", false, Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_YES_NO);
-			buddy_remove_dialog->set_secondary_text("Are you sure you want to remove " + (*iter)[m_Columns.m_col_username] + " from your buddy list?");
-			buddy_remove_dialog->signal_response().connect(sigc::bind(sigc::mem_fun(*this, &BuddyListWin::onBuddyRemoveDialogResponseSignal), iter, buddy_remove_dialog));
-			buddy_remove_dialog->show();
-			
-		}
-	}
-}
-
-void BuddyListWin::onBuddyRemoveDialogResponseSignal(int response_id, Gtk::TreeModel::iterator &iter, Gtk::MessageDialog *dialog) {
-	switch(response_id) {
-		case(Gtk::RESPONSE_YES): {
-			/* better let that pesky backend know */
-			SendRemoveBuddyPacket removeBuddy;
-			removeBuddy.userid = (*iter)[m_Columns.m_col_id];
-			client_->getClient()->send( &removeBuddy );
-			if (app_ptr_->checkConfigLogOption(app_ptr_->getConfig()->getConfigOptions()->getLogBuddyRemove()))
-				app_ptr_->getLog()->writeLog("Buddy removed: " + (*iter)[m_Columns.m_col_id]);
-			break;
-		}
-		case(Gtk::RESPONSE_NONE):
-			case(Gtk::RESPONSE_NO): {
-				/* Seems you do nothing here.. */
-				break;
+			Gtk::MessageDialog buddy_remove_accept(*this, "Remove Buddy:", false, Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_YES_NO);
+			buddy_remove_accept.set_secondary_text("Are you sure you want to remove " + (*iter)[m_Columns.m_col_username] + " from your buddy list?");
+			int b_result = buddy_remove_accept.run();
+			switch(b_result) {
+				case(Gtk::RESPONSE_YES): {
+					/* better let that pesky backend know */
+					SendRemoveBuddyPacket removeBuddy;
+					removeBuddy.userid = (*iter)[m_Columns.m_col_id];
+					client_->getClient()->send( &removeBuddy );
+					break;
+				}
+				case(Gtk::RESPONSE_NO): {
+					/* Seems you do nothing here.. */
+					break;
+				}
 			}
+		}
 	}
-	dialog->hide();
-	delete dialog;
 }
 
 void BuddyListWin::onStatusEntryChange() {
 	if (!(statuscombobox_->get_active_row_number() == -1)) {
 		cout << "Changing status..." << endl;
-		if (app_ptr_->checkConfigLogOption(app_ptr_->getConfig()->getConfigOptions()->getLogStatusChange()))
-			app_ptr_->getLog()->writeLog("Status changed to: " + statusentry_->get_text());
 		SendStatusMessagePacket *packet = new SendStatusMessagePacket();
 		packet->awaymsg = statusentry_->get_text();
 		client_->getClient()->send( packet );
@@ -193,58 +170,32 @@ void BuddyListWin::onInviteReceived() {
 	vector<InviteRequestPacket *> inviteVector = client_->getInviteVector();
 	for (int i = 0; i < inviteVector.size(); i++) {
 		InviteRequestPacket *invite = inviteVector.at(i);
-		InviteRequestPacket *copy_invite = new InviteRequestPacket(*invite);
-		Gtk::MessageDialog *invite_dialog = new Gtk::MessageDialog(*this, "You have a new invite request from: ", false, Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_YES_NO);
-		invite_dialog->set_secondary_text("User: " + invite->name + "\nNickname: " + invite->nick + "\nInvite Message: " + invite->msg);
-		invite_dialog->signal_response().connect(sigc::bind(sigc::mem_fun(*this, &BuddyListWin::onInviteReceivedDialogResponseSignal), copy_invite, invite_dialog));
-		invite_dialog->show();
+		Gtk::MessageDialog invite_accept(*this, "You have a new invite request from:", false, Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_YES_NO);
+		invite_accept.set_secondary_text("User: " + invite->name + "\nNickname: " + invite->nick + "\nInvite Message: " + invite->msg);
+		int i_result = invite_accept.run();
+		switch(i_result) {
+			case(Gtk::RESPONSE_YES): {
+				/* better let that pesky backend know */
+// 				InviteBuddyPacket *invite_accepted = new InviteBuddyPacket();
+// 				invite_accepted->InviteBuddyPacket::addInviteName(invite->name, "Accepted.");
+// 				client_->getClient()->send(invite_accepted);
+				SendAcceptInvitationPacket accept;
+				accept.name = invite->name;
+				client_->getClient()->send( &accept );
+				eventUpdateBuddyList();
+				break;
+			}
+			case(Gtk::RESPONSE_NO): {
+				SendDenyInvitationPacket deny;
+				deny.name = invite->name;
+				client_->getClient()->send( &deny );
+				break;
+			}
+		}
 		delete invite;
 	}
 	client_->clearInviteVector();
 }
-
-void BuddyListWin::onInviteReceivedDialogResponseSignal(int response_id, InviteRequestPacket *invite, Gtk::MessageDialog *dialog) {
-	switch(response_id) {
-		case(Gtk::RESPONSE_YES): {
-			/* better let that pesky backend know */
-			// 				InviteBuddyPacket *invite_accepted = new InviteBuddyPacket();
-			// 				invite_accepted->InviteBuddyPacket::addInviteName(invite->name, "Accepted.");
-			// 				client_->getClient()->send(invite_accepted);
-			SendAcceptInvitationPacket accept;
-			accept.name = invite->name;
-			client_->getClient()->send( &accept );
-			eventUpdateBuddyList();
-			if (app_ptr_->checkConfigLogOption(app_ptr_->getConfig()->getConfigOptions()->getLogInviteReceive()))
-				app_ptr_->getLog()->writeLog("Accepted buddy invitation for " + invite->name);
-			break;
-		}
-		case(Gtk::RESPONSE_NONE):
-		case(Gtk::RESPONSE_NO): {
-			SendDenyInvitationPacket deny;
-			deny.name = invite->name;
-			client_->getClient()->send( &deny );
-			if (app_ptr_->checkConfigLogOption(app_ptr_->getConfig()->getConfigOptions()->getLogInviteReceive()))
-				app_ptr_->getLog()->writeLog("Denied buddy invitation for " + invite->name);
-			break;
-		}
-	}
-	delete invite;
-	dialog->hide();
-	delete dialog;
-}
-
-void BuddyListWin::onRehashConfigMenuItemActivate() {
-	app_ptr_->getConfig()->loadConfigOptions();
-}
-
-void BuddyListWin::onLogOutMenuItemActivate() {
-	client_->disconnect();
-	app_ptr_->getLog()->writeLog("Logged out.");
-	app_ptr_->deleteCreatedClasses();
-	app_ptr_->deleteBuddyListWin();
-	app_ptr_->createNewLoginWin();
-}
-
 void BuddyListWin::onInviteMenuItemActivate() {
 	/* Lets spawn a funky window to get the username they want to add! 
 	 * Why dont gtk+/gtkmm implement a damn text entry dialouge, it'd be so much easier */
@@ -260,46 +211,31 @@ void BuddyListWin::onInviteBtnClicked() {
 	invite_sender.addInviteName(username, message);
 	int ireturn = client_->getClient()->send(&invite_sender);
 	Gtk::MessageDialog dialog(*this, "Invite Buddy", false, Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_OK);
-	if (ireturn) {
+	if (ireturn)
 		dialog.set_secondary_text("Successfully invited " + username);
-		if (app_ptr_->checkConfigLogOption(app_ptr_->getConfig()->getConfigOptions()->getLogInviteSend()))
-			app_ptr_->getLog()->writeLog("Successfully invited " + username);
-	}
-	else {
-		dialog.set_secondary_text("Error inviting " + username);
-		if (app_ptr_->checkConfigLogOption(app_ptr_->getConfig()->getConfigOptions()->getLogInviteSend()))
-			app_ptr_->getLog()->writeLog("Error inviting " + username);
-	}
-	dialog.show();
+	else
+		dialog.set_secondary_text("Error inviting " + username);	
+	dialog.run();
 	invitesendwin_->hide();
 	invitesendwho_->set_text("");
 	invitesendmessage_->set_text("");
 }
 
 bool BuddyListWin::onDeleteEvent(GdkEventAny *e) {
-	Gtk::MessageDialog *close_dialog = new Gtk::MessageDialog(*this, "Quit FalmingTux", false, Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_YES_NO);
-	close_dialog->set_secondary_text("Are you sure you want to quit?");
-	close_dialog->signal_response().connect(sigc::bind(sigc::mem_fun(*this, &BuddyListWin::oncloseDialogResponseSignal), close_dialog));
-	close_dialog->show();
-	return true;
-}
-
-void BuddyListWin::oncloseDialogResponseSignal(int response_id, Gtk::MessageDialog *dialog) {
-		switch(response_id) {
+	Gtk::MessageDialog close_dialog(*this, "Quit FalmingTux", false, Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_YES_NO);
+	close_dialog.set_secondary_text("Are you sure you want to quit?");
+	int d_result = close_dialog.run();
+	switch(d_result) {
 		case(Gtk::RESPONSE_YES): {
 			int i;
 			client_->getClient()->disconnect();
-			app_ptr_->deleteCreatedClasses();
 			app_ptr_->quit();
-			//return false;
+			return false;
 			break;
 		}
-		case(Gtk::RESPONSE_NONE):
 		case(Gtk::RESPONSE_NO): {
 			/* Do nothing and return true */
-			//return true;
-			dialog->hide();
-			delete dialog;
+			return true;
 			break;
 		}
 	}
@@ -504,22 +440,4 @@ void BuddyListWin::onMessageReceived() {
 		delete message;
 	}
 	client_->clearMessageVector();
-}
-
-void BuddyListWin::changeNick(Glib::ustring nick) {
-	SendNickChangePacket nick_change;
-	nick_change.nick = nick;
-	int ireturn = client_->getClient()->send(&nick_change);
-	Gtk::MessageDialog dialog(*this, "Nick Change", false, Gtk::MESSAGE_INFO, Gtk::BUTTONS_OK);
-	if (ireturn) {
-		dialog.set_secondary_text("Successfully changed nick to " + nick);
-		if (app_ptr_->checkConfigLogOption(app_ptr_->getConfig()->getConfigOptions()->getLogNickChange()))
-			app_ptr_->getLog()->writeLog("Successfully changed nick to " + nick);
-	}
-	else {
-		dialog.set_secondary_text("Error changing nick to " + nick);	
-		if (app_ptr_->checkConfigLogOption(app_ptr_->getConfig()->getConfigOptions()->getLogNickChange()))
-			app_ptr_->getLog()->writeLog("Error changing nick to " + nick);
-	}
-	dialog.show();
 }

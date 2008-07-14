@@ -1,7 +1,7 @@
 /* FlamingTux 
  * Authors: peacey, jeed890 
  * http://flamingtux.googlecode.com 
- *  This code is protected by GPLv3, please see LICENSE file for more information */
+ * This code is GPL, licensing soon though ;) */
 #ifndef ___FIRECLIENT_H___
 #define ___FIRECLIENT_H___
 
@@ -10,9 +10,6 @@
 #include "BackendEvents.h"
 #include <vector>
 #include "xfirelib/inviterequestpacket.h"
-
-class Application;
-
 namespace xfireclient {
 	using namespace std;
 	using namespace xfirelib;
@@ -20,13 +17,11 @@ namespace xfireclient {
 	class FireClient : public PacketListener, public sigc::trackable {
 		
 		public:
-			FireClient(Application *app_ptr);
+			FireClient(string username, string password);
+			FireClient();
 			~FireClient();
 			void run();
-			void createNewClient();
 			void receivedPacket(XFirePacket *packet);
-			void disconnect();
-			void initSetup();
 			Client *getClient() { return client_; }
 			void setClient(Client *client) { client_ = client; }
 			int getLoginStatus() { return loginStatus_; }
@@ -39,10 +34,8 @@ namespace xfireclient {
 			vector<InviteRequestPacket *> getInviteVector() { return inviteVector; }
 			vector<MessagePacket *> getMessageVector() { return messageVector; }
 			void clearMessageVector() { messageVector.clear(); }
-			void clearInviteVector() { inviteVector.clear(); }
 			bool sendMessage(Glib::ustring recepient, Glib::ustring message);
 		private:
-			Application *app_ptr_;
 			Client *client_;
 			string username_;
 			string password_;

@@ -26,30 +26,22 @@ class BuddyListWin : public Gtk::Window {
 		void eventUpdateBuddyList();
 		void set_client(FireClient *client) { client_ = client; }
 		/* im just gunna shove my invite functions here :D - Jeed */
-		void onInviteReceived();
+		void onInviteRecieved();
 		/* Like youll stop me :D */
 		void onStatusEntryChange();
 		bool onQueryTooltip(int x, int y, bool keyboard_tooltip, const Glib::RefPtr<Gtk::Tooltip>& tooltip);
 		Gtk::TreeIter &get_iter_at_username(Glib::ustring username);
-		void changeNick(Glib::ustring nick);
 	private:
 		void onInviteBtnClicked();
 		void onInviteMenuItemActivate();
-		void onLogOutMenuItemActivate();
-		void onRehashConfigMenuItemActivate();
 		void onQuitActivate();
 		virtual bool onDeleteEvent(GdkEventAny *e);
-		void oncloseDialogResponseSignal(int response_id, Gtk::MessageDialog *dialog);
-		void onBuddyRemoveDialogResponseSignal(int response_id, Gtk::TreeModel::iterator &iter, Gtk::MessageDialog *dialog);
-		void onInviteReceivedDialogResponseSignal(int response_id, InviteRequestPacket *invite, Gtk::MessageDialog *dialog);
 		Glib::RefPtr<Gnome::Glade::Xml> refXml_;
 		Gtk::Window *buddylistwin_;
 		Gtk::Entry *statusentry_;
 		Gtk::ComboBoxEntry *statuscombobox_;
 		Gtk::ImageMenuItem *quit_widget_;
-		Gtk::MenuItem *invite_buddy_mi_;
-		Gtk::MenuItem *log_out_mi_;
-		Gtk::MenuItem *rehash_config_mi_;
+		Gtk::MenuItem *invite_buddy_widget_;
 		BEThread *eventThread_;
 		
 		ModelColumns m_Columns;
