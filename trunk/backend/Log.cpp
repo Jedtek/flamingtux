@@ -9,7 +9,7 @@
 #include "../Application.h"
 using namespace std;
 
-Glib::ustring& Log::getTimestamp() {
+Glib::ustring *Log::getTimestamp() {
 	char buffer[25];
 	time_t rawtime;
 	struct tm *timeinfo;
@@ -17,7 +17,7 @@ Glib::ustring& Log::getTimestamp() {
 	timeinfo = localtime(&rawtime);
 	strftime(buffer, 25, "%c", timeinfo);
 	Glib::ustring *tmp = new Glib::ustring(buffer);
-	return *tmp;
+	return tmp;
 }
 
 Log::Log(Glib::ustring logpath, Glib::ustring username, Application *app_ptr) : username_(username) {
@@ -55,7 +55,9 @@ int Log::logStart() {
 		writeError(tmp + strerror(errno));
 		return 1;
 	}
-	log << "Logging Started At: " << getTimestamp() << endl;
+	Glib::ustring *ts = getTimestamp();
+	log << "Logging Started At: " << ts << endl;
+	delete ts;
 	log.close();
 	return 0;
 }
@@ -70,7 +72,9 @@ int Log::logEnd() {
 		writeError(tmp + strerror(errno));
 		return 1;
 	}
-	log << "Logging Ended At: " << getTimestamp() << endl;
+	Glib::ustring *ts = getTimestamp();
+	log << "Logging Ended At: " << ts << endl;
+	delete ts;
 	log.close();
 	return 0;
 }
@@ -92,7 +96,9 @@ int Log::writeError(Glib::ustring errmsg) {
 			return 1;
 		}
 	}
-	log << getTimestamp() << " *** ERROR: " << errmsg << endl;
+	Glib::ustring *ts = getTimestamp();
+	log << ts << " *** ERROR: " << errmsg << endl;
+	delete ts;
 	log.close();
 	return 0;
 }
@@ -107,7 +113,9 @@ int Log::writeLog(Glib::ustring msg) {
 		writeError(tmp + strerror(errno));
 		return 1;
 	}
-	log << getTimestamp() << " " << msg << endl;
+	Glib::ustring *ts = getTimestamp();
+	log << ts << " " << msg << endl;
+	delete ts;
 	log.close();
 	return 0;
 }
@@ -120,7 +128,9 @@ int Log::logClear() {
 		writeError(tmp + strerror(errno));
 		return 1;
 	}
-	log << getTimestamp() << " New log created" << endl;
+	Glib::ustring *ts = getTimestamp();
+	log << ts << " New log created" << endl;
+	delete ts;
 	log.close();
 	return 0;
 }
@@ -137,7 +147,9 @@ int Log::chatLog(Glib::ustring username, Glib::ustring nickname, Glib::ustring m
 		writeError(tmp + strerror(errno));
 		return 1;
 	}
-	log << getTimestamp() << " " << nickname << " said: " << message << endl;
+	Glib::ustring *ts = getTimestamp();
+	log << ts << " " << nickname << " said: " << message << endl;
+	delete ts;
 	log.close();
 	return 0;
 }
@@ -154,7 +166,9 @@ int Log::chatLogSend(Glib::ustring username, Glib::ustring message) {
 		writeError(tmp + strerror(errno));
 		return 1;	
 	}
-	log << getTimestamp() << " " << username_ << " said: " << message << endl;
+	Glib::ustring *ts = getTimestamp();
+	log << ts << " " << username_ << " said: " << message << endl;
+	delete ts;
 	log.close();
 	return 0;
 }
