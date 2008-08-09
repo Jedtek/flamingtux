@@ -26,7 +26,7 @@ class Log {
 		Glib::ustring log_path_;
 		int logStart();
 		int logEnd();
-		Glib::ustring *getTimestamp();
+		char *getTimestamp();
 		void checkLogPath();
 };
 
