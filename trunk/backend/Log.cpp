@@ -9,14 +9,15 @@
 #include "../Application.h"
 using namespace std;
 
-Glib::ustring Log::getTimestamp() {
-	static char buffer[25];
+Glib::ustring& Log::getTimestamp() {
+	char buffer[25];
 	time_t rawtime;
 	struct tm *timeinfo;
 	time(&rawtime);
 	timeinfo = localtime(&rawtime);
 	strftime(buffer, 25, "%c", timeinfo);
-	return buffer;
+	Glib::ustring *tmp = new Glib::ustring(buffer);
+	return *tmp;
 }
 
 Log::Log(Glib::ustring logpath, Glib::ustring username, Application *app_ptr) : username_(username) {
