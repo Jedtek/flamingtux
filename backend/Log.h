@@ -3,6 +3,7 @@
 
 #include <gtkmm.h>
 #include <string>
+#include <ctime>
 using namespace std;
 
 class Application;
@@ -26,6 +27,7 @@ class Log {
 		Glib::ustring log_path_;
 		int logStart();
 		int logEnd();
+		char *asctime_wn(const struct tm *timeptr);
 		char *getTimestamp();
 		void checkLogPath();
 };
