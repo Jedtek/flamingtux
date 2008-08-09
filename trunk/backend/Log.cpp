@@ -18,6 +18,7 @@ Glib::ustring *Log::getTimestamp() {
 	strftime(buffer, 25, "%c", timeinfo);
 	Glib::ustring *tmp = new Glib::ustring(buffer);
 	cout << "getTimestamp()" << endl;
+	cout << "timeinfo " << timeinfo << endl;
 	cout << "TIME IS: " << buffer << endl;
 	cout << "---------" << endl;
 	return tmp;
