@@ -56,7 +56,7 @@ int Log::logStart() {
 		return 1;
 	}
 	Glib::ustring *ts = getTimestamp();
-	log << "Logging Started At: " << ts << endl;
+	log << "Logging Started At: " << *ts << endl;
 	delete ts;
 	log.close();
 	return 0;
@@ -73,7 +73,7 @@ int Log::logEnd() {
 		return 1;
 	}
 	Glib::ustring *ts = getTimestamp();
-	log << "Logging Ended At: " << ts << endl;
+	log << "Logging Ended At: " << *ts << endl;
 	delete ts;
 	log.close();
 	return 0;
@@ -97,7 +97,7 @@ int Log::writeError(Glib::ustring errmsg) {
 		}
 	}
 	Glib::ustring *ts = getTimestamp();
-	log << ts << " *** ERROR: " << errmsg << endl;
+	log << *ts << " *** ERROR: " << errmsg << endl;
 	delete ts;
 	log.close();
 	return 0;
@@ -114,7 +114,7 @@ int Log::writeLog(Glib::ustring msg) {
 		return 1;
 	}
 	Glib::ustring *ts = getTimestamp();
-	log << ts << " " << msg << endl;
+	log << *ts << " " << msg << endl;
 	delete ts;
 	log.close();
 	return 0;
@@ -129,7 +129,7 @@ int Log::logClear() {
 		return 1;
 	}
 	Glib::ustring *ts = getTimestamp();
-	log << ts << " New log created" << endl;
+	log << *ts << " New log created" << endl;
 	delete ts;
 	log.close();
 	return 0;
@@ -148,7 +148,7 @@ int Log::chatLog(Glib::ustring username, Glib::ustring nickname, Glib::ustring m
 		return 1;
 	}
 	Glib::ustring *ts = getTimestamp();
-	log << ts << " " << nickname << " said: " << message << endl;
+	log << *ts << " " << nickname << " said: " << message << endl;
 	delete ts;
 	log.close();
 	return 0;
@@ -167,7 +167,7 @@ int Log::chatLogSend(Glib::ustring username, Glib::ustring message) {
 		return 1;	
 	}
 	Glib::ustring *ts = getTimestamp();
-	log << ts << " " << username_ << " said: " << message << endl;
+	log << *ts << " " << username_ << " said: " << message << endl;
 	delete ts;
 	log.close();
 	return 0;
