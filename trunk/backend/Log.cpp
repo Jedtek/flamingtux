@@ -17,6 +17,9 @@ Glib::ustring *Log::getTimestamp() {
 	timeinfo = localtime(&rawtime);
 	strftime(buffer, 25, "%c", timeinfo);
 	Glib::ustring *tmp = new Glib::ustring(buffer);
+	cout << "getTimestamp()" << endl;
+	cout << "TIME IS: " << *tmp << endl;
+	cout << "---------" << endl;
 	return tmp;
 }
 
@@ -148,6 +151,9 @@ int Log::chatLog(Glib::ustring username, Glib::ustring nickname, Glib::ustring m
 		return 1;
 	}
 	Glib::ustring *ts = getTimestamp();
+	cout << "chatLog()" << endl;
+	cout << "TIME IS: " << *ts << endl;
+	cout << "---------" << endl;
 	log << *ts << " " << nickname << " said: " << message << endl;
 	delete ts;
 	log.close();
@@ -167,6 +173,9 @@ int Log::chatLogSend(Glib::ustring username, Glib::ustring message) {
 		return 1;	
 	}
 	Glib::ustring *ts = getTimestamp();
+	cout << "chatLogSend()" << endl;
+	cout << "TIME IS: " << *ts << endl;
+	cout << "---------" << endl;
 	log << *ts << " " << username_ << " said: " << message << endl;
 	delete ts;
 	log.close();
