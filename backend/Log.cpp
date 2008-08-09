@@ -15,7 +15,7 @@ Glib::ustring *Log::getTimestamp() {
 	struct tm *timeinfo;
 	time(&rawtime);
 	timeinfo = localtime(&rawtime);
-	strftime(buffer, 25, "%c", timeinfo);
+	strftime(buffer, 25, "%Y", timeinfo);
 	Glib::ustring *tmp = new Glib::ustring(buffer);
 	cout << "getTimestamp()" << endl;
 	cout << "timeinfo " << timeinfo << endl;
