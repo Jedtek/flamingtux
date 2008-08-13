@@ -5,10 +5,16 @@
 #include <iostream>
 #include <stdexcept>
 #include <string>
+#include <dirent.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 
 #include "LoginWin.h"
 #include "../Application.h"
 #include "BuddyListWin.h"
+#include "DialogWin.h"
+#include "../backend/Log.h"
+#include "../backend/Config.h"
 
 #include <libglademm/xml.h>
 #include <gtkmm.h>
@@ -43,10 +49,8 @@ LoginWin::LoginWin(Glib::RefPtr<Gnome::Glade::Xml> refXml, Application *app, Fir
 }
 
 LoginWin::~LoginWin() {
-//  	login_btn_ = 0;
-//  	pass_entry_ = 0;
-//  	user_entry_ = 0;
-//  	loginwin_ = 0;
+	loginwin_->hide();
+  	loginwin_ = 0;
 	delete eventThread_;
 }
 
@@ -60,6 +64,7 @@ bool LoginWin::onDeleteEvent(GdkEventAny *e) {
 			return false;
 			break;
 		}
+		case(Gtk::RESPONSE_NONE):
 		case(Gtk::RESPONSE_NO): {
 			/* Do nothing and return true */
 			return true;
@@ -75,6 +80,11 @@ void LoginWin::login_pressed() {
 // 	}
 // 	eventThread_ = new BEThread();
 	// First time we are going to run client, so we have to create a new one
+	createUserDirectoryStructure(app_ptr_->getFlamingTuxDirectory(), user_entry_->get_text().lowercase());
+	Config *config = new Config(app_ptr_->getFlamingTuxDirectory() + user_entry_->get_text().lowercase() + "/config.cfg", user_entry_->get_text().lowercase(), app_ptr_);
+	app_ptr_->setConfig(config);
+	Log *log = new Log(config->getConfigOptions()->getLogsDirectory(), user_entry_->get_text(), app_ptr_);
+	app_ptr_->setLog(log);
 	client_->setUsername(user_entry_->get_text());
 	client_->setPassword(pass_entry_->get_text());
 	client_->setEventThread(eventThread_);
@@ -82,18 +92,23 @@ void LoginWin::login_pressed() {
 }
 
 void LoginWin::eventLoginFailed() {
-	Gtk::MessageDialog dialog("Login Failed.", false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK, true);
+	Gtk::MessageDialog dialog("Login Failed", false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK, true);
 	dialog.set_secondary_text("Please check username/password");
 	dialog.run();
 	//app_ptr_->createNewLoginWin();
-	client_->getClient()->disconnect();
-	delete client_->getClient();
-	app_ptr_->run();
+	//client_->getClient()->disconnect();
+	//delete client_->getClient();
+	//app_ptr_->run();
+	client_->disconnect();
+	app_ptr_->getLog()->writeLog("Login Failed. Invalid username/password.");
+	app_ptr_->deleteCreatedClasses();
 }
 
 void LoginWin::eventLoginSuccess() {
+	app_ptr_->getLog()->writeLog("Login Success.");
 	app_ptr_->createBuddyListWin();
 	app_ptr_->hideLoginWin();
+	app_ptr_->getConfig()->getConfigOptions()->setNickname((app_ptr_->getConfig()->getConfigOptions()->getNickname()));
 }
 
 void LoginWin::on_event_finish() {
@@ -111,4 +126,18 @@ void LoginWin::on_event_finish() {
 			break;
 	}
 	eventThread_->setType(NOT_SET);
+}
+
+int LoginWin::createUserDirectoryStructure(Glib::ustring ft_directory, Glib::ustring username) {
+	DIR *pdir;
+	pdir = opendir(ft_directory.c_str());
+	if (!pdir) {
+			return -1;
+	}
+	Glib::ustring tmp(ft_directory + '/' + username);
+	Glib::ustring tmp2(tmp + "/logs");
+	int result = mkdir(tmp.c_str(), S_IRWXU | S_IRWXG | S_IRWXO) | mkdir(tmp2.c_str(), S_IRWXU | S_IRWXG | S_IRWXO);
+	if (!result)
+		return 0;
+	return 1;
 }

@@ -3,9 +3,11 @@
  * http://flamingtux.googlecode.com 
  *  This code is protected by GPLv3, please see LICENSE file for more information */
 // Includes
+#include "../Application.h"
 #include "FireClient.h"
 #include "common.h"
-#include "xfirelib/sendremovebuddypacket.h"
+#include "xfirelib/recvremovebuddypacket.h"
+#include "xfirelib/recvnicknamechangepacket.h"
 #include <vector>
 /* Now we begin the declerations of the functions defined in FireClient classey */
 
@@ -14,39 +16,43 @@ namespace xfireclient {
 	using namespace std;
 	using namespace xfirelib;
 	
-	FireClient::FireClient(string username, string password)
-		: username_(username), password_(password), client_(0) {
-		
-		client_ = new Client();
-		//cout << "ALALALALALAA " << client_ << endl;
-		//client_ = 0;
-		loginStatus_ = 0;
-	}
-	
-	FireClient::FireClient()
-	: username_(""), password_(""), client_(0) {
+	FireClient::FireClient(Application *app_ptr)
+	: username_(""), password_(""), client_(0), app_ptr_(app_ptr) {
 		
 		client_ = new Client();
 		loginStatus_ = 0;
 	}
 	
 	FireClient::~FireClient() {
-		//client_->disconnect();
-		delete client_;
+		client_->disconnect();
+		if (client_) {
+			delete client_;
+			client_ = 0;
+		}
 	}
 	
 	void FireClient::setEventThread(BEThread *et) { eventThread_ = et; }
 		
+	void FireClient::createNewClient() {
+			if (client_)
+				delete client_;
+			client_ = new Client();
+	}
+	
+	void FireClient::initSetup() {
+		client_->addPacketListener(this);
+	}
+	
 	void FireClient::run() {
 		if (username_ == "" || password_ == "")
 			cout << "Username or password null!" << endl;
 		else {
-			//client_ = new Client();
 			client_->connect(username_, password_);
-			client_->addPacketListener(this);
-			/* start the eternal while loop for test purposes*/
-			//while (1) { };
 		}
+	}
+	
+	void FireClient::disconnect() {
+		client_->disconnect();
 	}
 	
 	void FireClient::launchThread(event_type type) {
@@ -54,7 +60,7 @@ namespace xfireclient {
 	}
 	void FireClient::receivedPacket(XFirePacket *packet) {
 		XFirePacketContent *content = packet->getContent();
-		cout << " Received Packet lala: " << content->getPacketId() << endl;
+		cout << " Received Packet with id: " << content->getPacketId() << endl;
 		switch(content->getPacketId()) {
 			case XFIRE_LOGIN_FAILED_ID: {
 				cout << "Login failed." << endl;
@@ -73,19 +79,16 @@ namespace xfireclient {
 				loginStatus_ = 1;
 				break;
 			}
+			
 			case XFIRE_MESSAGE_ID: {
 				cout << "Got Message." << endl;
 				if( (( MessagePacket*)content)->getMessageType() == 0){
 					MessagePacket *message = (MessagePacket*)content;
 					BuddyListEntry *entry = client_->getBuddyList()->getBuddyBySid( ((MessagePacket*)content)->getSid() );
-					cout << "------------" << endl;
-					cout << entry->username << " says:\n"; 
-					cout << ((MessagePacket*)content)->getMessage() << endl;
-					cout << "------------" << endl;	
-					/* now since we got a message lets auto-reply */
-// 					SendMessagePacket msg;
-// 					msg.init(client_, entry->username, "lool auto-reply!");
-// 					client_->send(&msg);
+// 					cout << "------------" << endl;
+// 					cout << entry->username << " says:\n"; 
+// 					cout << ((MessagePacket*)content)->getMessage() << endl;
+// 					cout << "------------" << endl;
 					
 					MessagePacket *copy_message = new MessagePacket(*message);
 					messageVector.push_back(copy_message);
@@ -95,24 +98,38 @@ namespace xfireclient {
 				}
 				break;
 			}
+			
 			case XFIRE_BUDDYS_ONLINE_ID: {
 				BuddyList *list = client_->getBuddyList();
 				vector<long>userids = *(((BuddyListOnlinePacket *)content)->userids);
 				for (vector<long>::iterator i = userids.begin(); i != userids.end(); ++i) {
 					if (list->getBuddyById(*i)->isOnline() == 1) {
 						cout << list->getBuddyById(*i)->nick << " <" << list->getBuddyById(*i)->username << ">" << " logged in!" << endl;
+						app_ptr_->getLog()->writeLog(list->getBuddyById(*i)->username + " is now online.");
 					}
-					else 
+					else {
 						cout << list->getBuddyById(*i)->nick << " <" << list->getBuddyById(*i)->username << ">" << " logged out!" << endl;
+						app_ptr_->getLog()->writeLog(list->getBuddyById(*i)->username + " is now offline.");
+					}
 				}
  				Glib::signal_idle().connect(
 				sigc::bind<1>(sigc::bind_return(sigc::mem_fun(*this, &FireClient::launchThread), false), UPDATE_BUDDY_LIST));
 				break;
 			}
+			
+			case XFIRE_RECV_NICKNAMECHANGE_PACKET_ID: {
+				Glib::signal_idle().connect(
+						sigc::bind<1>(sigc::bind_return(sigc::mem_fun(*this, &FireClient::launchThread), false), UPDATE_BUDDY_LIST));
+				BuddyList *list = client_->getBuddyList();
+				if (app_ptr_->getConfig()->getConfigOptions()->getLogBuddyNickChange() == "1")
+					app_ptr_->getLog()->writeLog(list->getBuddyById(((RecvNicknameChangePacket *) content)->userId)->username + " changed nickname to: " + ((RecvNicknameChangePacket *) content)->nickname + ".");
+			}
+					
 			case XFIRE_RECV_OLDVERSION_PACKET_ID: {
 				cout << "Our protocol version is too old" << endl;
 				break;
 			}
+			
 			case XFIRE_RECV_STATUSMESSAGE_PACKET_ID: {
 				RecvStatusMessagePacket *status = (RecvStatusMessagePacket*) content;
 

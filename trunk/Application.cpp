@@ -22,7 +22,8 @@ Application::Application(int argc, char *argv[], string path)
 	//refXml_ = Gnome::Glade::Xml::create(path);
 	
 	checkFlamingTuxDirectory();
-	//client_ = new FireClient();
+	//client_ = new FireClient(this);
+	//client_->initSetup();
  	//convoWindow = new ConvoWin(refXml_, this, client_);
  	//convoWindow->get_window().hide();
 }
@@ -34,6 +35,8 @@ Application::~Application() {
 		delete loginWindow;
 	if (buddyListWindow)
 		delete buddyListWindow;
+	if (convoWindow)
+		delete convoWindow;
 }
 
 void Application::checkFlamingTuxDirectory() {
@@ -55,10 +58,14 @@ void Application::run() {
 
 void Application::createNewLoginWin() {
 	refXml_ = Gnome::Glade::Xml::create(path_);
-	if (client_)
+	if (client_) {
 		delete client_;
-	if (loginWindow)
+		client_ = 0;
+	}
+	if (loginWindow) {
 		delete loginWindow;
+		loginWindow = 0;
+	}
 	client_ = new FireClient(this);
 	client_->initSetup();
 	loginWindow = new LoginWin(refXml_, this, client_);
@@ -72,10 +79,19 @@ void Application::createBuddyListWin() {
 
 void Application::deleteBuddyListWin() {
 	delete buddyListWindow;
+	buddyListWindow = 0;
 }
 
 void Application::hideLoginWin() {
 	loginWindow->get_window().hide();
+}
+
+void Application::performLogOut() {
+	client_->disconnect();
+	deleteCreatedClasses();
+	deleteBuddyListWin();
+	deleteConvoWin();
+	createNewLoginWin();
 }
 
 void Application::showLoginWin() {
@@ -88,10 +104,11 @@ void Application::createNewConvoWin() {
 }
 
 void Application::deleteConvoWin() {
-		if (convoWindow) {
-			convoWindow->get_window().hide();
-			delete convoWindow;
-		}
+	if (convoWindow) {
+		convoWindow->get_window().hide();
+		delete convoWindow;
+		convoWindow = 0;
+	}
 }
 
 Gtk::Notebook_Helpers::PageIterator Application::appendPageConvoWin(Gtk::TreeModel::iterator &iter) {
@@ -112,9 +129,21 @@ int Application::checkConfigLogOption(Glib::ustring specific) {
 }
 
 void Application::quit() {
- 	if (loginWindow)
+ 	if (loginWindow) {
  		delete loginWindow;
- 	if (client_)
+		loginWindow = 0;
+	}
+	if (buddyListWindow) {
+		delete buddyListWindow;
+		buddyListWindow = 0;
+	}
+	if (convoWindow) {
+		delete convoWindow;
+		convoWindow = 0;	
+	}
+ 	if (client_) {
  		delete client_;
+		client_ = 0;
+	}
 	Gtk::Main::quit();
 }

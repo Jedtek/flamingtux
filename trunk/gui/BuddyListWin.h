@@ -12,6 +12,7 @@
 #include "../backend/FireClient.h"
 #include "../backend/BackendEvents.h"
 class Application;
+class PreferencesWin;
 
 enum buddy_status { ONLINE, OFFLINE };
 
@@ -36,6 +37,7 @@ class BuddyListWin : public Gtk::Window {
 		void onInviteBtnClicked();
 		void onInviteMenuItemActivate();
 		void onLogOutMenuItemActivate();
+		void onPreferencesMenuItemActivate();
 		void onRehashConfigMenuItemActivate();
 		void onQuitActivate();
 		virtual bool onDeleteEvent(GdkEventAny *e);
@@ -48,9 +50,11 @@ class BuddyListWin : public Gtk::Window {
 		Gtk::ComboBoxEntry *statuscombobox_;
 		Gtk::ImageMenuItem *quit_widget_;
 		Gtk::MenuItem *invite_buddy_mi_;
+		Gtk::MenuItem *preferences_mi_;
 		Gtk::MenuItem *log_out_mi_;
 		Gtk::MenuItem *rehash_config_mi_;
 		BEThread *eventThread_;
+		PreferencesWin *preferenceswin_;
 		
 		ModelColumns m_Columns;
 		
@@ -78,7 +82,7 @@ class BuddyListWin : public Gtk::Window {
 		void onMessageReceived();
 		void on_treeview_clicked(GdkEventButton *event);
 		void on_treeview_keyed(GdkEventKey *event);
-		void onStatusEntryKeyRelease(GdkEventKey* event);
+		void onStatusEntryKeyRelease(GdkEventKey *event);
 
 };
 

@@ -74,11 +74,6 @@ bool LoginWin::onDeleteEvent(GdkEventAny *e) {
 }
 
 void LoginWin::login_pressed() {
-// 	if (eventThread_) {
-// 		//c.disconnect();
-// 		delete eventThread_;
-// 	}
-// 	eventThread_ = new BEThread();
 	// First time we are going to run client, so we have to create a new one
 	createUserDirectoryStructure(app_ptr_->getFlamingTuxDirectory(), user_entry_->get_text().lowercase());
 	Config *config = new Config(app_ptr_->getFlamingTuxDirectory() + user_entry_->get_text().lowercase() + "/config.cfg", user_entry_->get_text().lowercase(), app_ptr_);

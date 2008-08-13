@@ -10,6 +10,7 @@
 #include "BuddyListWin.h"
 #include "../Application.h"
 #include "../CommonFunctions.h"
+#include "PreferencesWin.h"
 #include <libglademm/xml.h>
 #include <gtkmm.h>
 
@@ -40,6 +41,9 @@ BuddyListWin::BuddyListWin(Glib::RefPtr<Gnome::Glade::Xml> refXml, Application *
 	if (!quit_widget_)
 		throw std::runtime_error("Couldn't find BuddyListWinQuit");
 	
+	refXml->get_widget("PreferencesMenuItem", preferences_mi_);
+	if (!preferences_mi_)
+		throw std::runtime_error("Couldn't find PreferencesMenuItem");
 	refXml->get_widget("LogOutMenuItem", log_out_mi_);
 	if (!log_out_mi_)
 		throw std::runtime_error("Couldn't find LogOutMenuItem");
@@ -65,6 +69,9 @@ BuddyListWin::BuddyListWin(Glib::RefPtr<Gnome::Glade::Xml> refXml, Application *
 		throw std::runtime_error("Couldn't find InviteSendBtn");
 	invitesendbtn_->signal_clicked().connect(sigc::mem_fun(*this, &BuddyListWin::onInviteBtnClicked));
 	
+	// create a new preferences window
+	preferenceswin_ = new PreferencesWin(refXml, app_ptr_);
+	
 	// connect required signals
 	statusentry_->signal_key_release_event().connect_notify(sigc::mem_fun(*this, &BuddyListWin::onStatusEntryKeyRelease));
 	statuscombobox_->signal_changed().connect(sigc::mem_fun(*this, &BuddyListWin::onStatusEntryChange));
@@ -72,6 +79,7 @@ BuddyListWin::BuddyListWin(Glib::RefPtr<Gnome::Glade::Xml> refXml, Application *
 	quit_widget_->signal_activate().connect(sigc::mem_fun(*this, &BuddyListWin::onQuitActivate));
 	invite_buddy_mi_->signal_activate().connect(sigc::mem_fun(*this, &BuddyListWin::onInviteMenuItemActivate));
 	log_out_mi_->signal_activate().connect(sigc::mem_fun(*this, &BuddyListWin::onLogOutMenuItemActivate));
+	preferences_mi_->signal_activate().connect(sigc::mem_fun(*this, &BuddyListWin::onPreferencesMenuItemActivate));
 	rehash_config_mi_->signal_activate().connect(sigc::mem_fun(*this, &BuddyListWin::onRehashConfigMenuItemActivate));
 	// set default value
 	statusentry_->set_text("Online");
@@ -103,6 +111,7 @@ BuddyListWin::BuddyListWin(Glib::RefPtr<Gnome::Glade::Xml> refXml, Application *
 }
 
 BuddyListWin::~BuddyListWin() {
+	delete preferenceswin_;
 	delete buddylistwin_;
 }
 
@@ -237,12 +246,17 @@ void BuddyListWin::onRehashConfigMenuItemActivate() {
 	app_ptr_->getConfig()->loadConfigOptions();
 }
 
+void BuddyListWin::onPreferencesMenuItemActivate() {
+	preferenceswin_->show();
+}
+
 void BuddyListWin::onLogOutMenuItemActivate() {
-	client_->disconnect();
-	app_ptr_->getLog()->writeLog("Logged out.");
-	app_ptr_->deleteCreatedClasses();
-	app_ptr_->deleteBuddyListWin();
-	app_ptr_->createNewLoginWin();
+	//client_->disconnect();
+	app_ptr_->getLog()->writeLog("Successfully logged out.");
+// 	app_ptr_->deleteCreatedClasses();
+// 	app_ptr_->createNewLoginWin();
+// 	app_ptr_->deleteBuddyListWin();
+	app_ptr_->performLogOut();
 }
 
 void BuddyListWin::onInviteMenuItemActivate() {
@@ -510,16 +524,18 @@ void BuddyListWin::changeNick(Glib::ustring nick) {
 	SendNickChangePacket nick_change;
 	nick_change.nick = nick;
 	int ireturn = client_->getClient()->send(&nick_change);
-	Gtk::MessageDialog dialog(*this, "Nick Change", false, Gtk::MESSAGE_INFO, Gtk::BUTTONS_OK);
-	if (ireturn) {
-		dialog.set_secondary_text("Successfully changed nick to " + nick);
-		if (app_ptr_->checkConfigLogOption(app_ptr_->getConfig()->getConfigOptions()->getLogNickChange()))
-			app_ptr_->getLog()->writeLog("Successfully changed nick to " + nick);
+	if (app_ptr_->getLog()) {
+		Gtk::MessageDialog dialog(*this, "Nick Change", false, Gtk::MESSAGE_INFO, Gtk::BUTTONS_OK);
+		if (ireturn) {
+			dialog.set_secondary_text("Successfully changed nick to " + nick);
+			if (app_ptr_->checkConfigLogOption(app_ptr_->getConfig()->getConfigOptions()->getLogNickChange()))
+				app_ptr_->getLog()->writeLog("Successfully changed nick to " + nick);
+		}
+		else {
+			dialog.set_secondary_text("Error changing nick to " + nick);	
+			if (app_ptr_->checkConfigLogOption(app_ptr_->getConfig()->getConfigOptions()->getLogNickChange()))
+				app_ptr_->getLog()->writeLog("Error changing nick to " + nick);
+		}
+		dialog.show();
 	}
-	else {
-		dialog.set_secondary_text("Error changing nick to " + nick);	
-		if (app_ptr_->checkConfigLogOption(app_ptr_->getConfig()->getConfigOptions()->getLogNickChange()))
-			app_ptr_->getLog()->writeLog("Error changing nick to " + nick);
-	}
-	dialog.show();
 }
