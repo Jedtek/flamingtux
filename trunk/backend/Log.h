@@ -17,7 +17,7 @@ class Log {
 		int writeError(Glib::ustring errmsg);
 		int logClear();
 		int chatLog(Glib::ustring username, Glib::ustring nickname, Glib::ustring message);
-		int chatLogSend(Glib::ustring username, Glib::ustring message);
+		int chatLogSend(Glib::ustring username, Glib::ustring message, Glib::ustring nickname);
 	private:
 		Application *app_ptr_;
 		Glib::ustring username_;

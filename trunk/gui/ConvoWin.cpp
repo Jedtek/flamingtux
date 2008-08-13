@@ -229,8 +229,11 @@ void ConvoWin::onSendButtonPressed(Gtk::VBox *vbox, Gtk::TreeModel::iterator &it
 			;// do nothing
 		else {
 			if (client_->sendMessage(buddy_entry->username, text_view_input->get_buffer()->get_text()) == true) {
-				updateTextView(text_view, client_->getUsername(), text_view_input->get_buffer()->get_text());
-				app_ptr_->getLog()->chatLogSend(buddy_entry->username, text_view_input->get_buffer()->get_text());
+				Glib::ustring nickname = app_ptr_->getConfig()->getConfigOptions()->getNickname();
+				if (nickname == "")
+					nickname = "[" + client_->getUsername() + "]";
+				updateTextView(text_view, nickname, text_view_input->get_buffer()->get_text());
+				app_ptr_->getLog()->chatLogSend(buddy_entry->username, text_view_input->get_buffer()->get_text(), nickname);
 			}
 		}
 		text_view_input->get_buffer()->set_text("");

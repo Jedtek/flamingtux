@@ -66,10 +66,15 @@ void ConvoWin::onWindowStateEvent(GdkEventWindowState* event) {
 
 bool ConvoWin::onDeleteEvent(GdkEventAny *e) {
 	
-	Gtk::MessageDialog close_dialog(*this, "Close tabs", false, Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_YES_NO);
-	close_dialog.set_secondary_text("Are you sure you want to close all opened tabs?");
-	close_dialog.show();
-	switch(d_result) {
+	Gtk::MessageDialog *close_dialog = new Gtk::MessageDialog(*this, "Close tabs", false, Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_YES_NO);
+	close_dialog->set_secondary_text("Are you sure you want to close all opened tabs?");
+	close_dialog->signal_response().connect(sigc::bind(sigc::mem_fun(*this, &ConvoWin::onCloseDialogResponseSignal), close_dialog));
+	close_dialog->show();
+	return true;
+}
+
+void ConvoWin::onCloseDialogResponseSignal(int response_id, Gtk::MessageDialog *dialog) {
+	switch(response_id) {
 		case(Gtk::RESPONSE_YES): {
 			int i;
 			Gtk::VBox *vbox;
@@ -77,15 +82,17 @@ bool ConvoWin::onDeleteEvent(GdkEventAny *e) {
 				vbox = (Gtk::VBox *) (convonotebook_->get_nth_page(i));
 				closeTab(vbox);
 			}
-			return false;
+			convowin_->hide();
 			break;
 		}
+		case(Gtk::RESPONSE_NONE):
 		case(Gtk::RESPONSE_NO): {
 			/* Do nothing and return true */
-			return true;
 			break;
 		}
 	}
+	dialog->hide();
+	delete dialog;
 }
 
 void ConvoWin::onPageRemoved(Gtk::Widget* page, guint page_num) {
@@ -221,8 +228,13 @@ void ConvoWin::onSendButtonPressed(Gtk::VBox *vbox, Gtk::TreeModel::iterator &it
 		if (text_view_input->get_buffer()->get_text() == "")
 			;// do nothing
 		else {
-			if (client_->sendMessage(buddy_entry->username, text_view_input->get_buffer()->get_text()) == true)
-				updateTextView(text_view, client_->getUsername(), text_view_input->get_buffer()->get_text());
+			if (client_->sendMessage(buddy_entry->username, text_view_input->get_buffer()->get_text()) == true) {
+				Glib::ustring nickname = app_ptr_->getConfig()->getConfigOptions()->getNickname();
+				if (nickname == "")
+					nickname = "[" + client_->getUsername() + "]";
+				updateTextView(text_view, nickname, text_view_input->get_buffer()->get_text());
+				app_ptr_->getLog()->chatLogSend(buddy_entry->username, text_view_input->get_buffer()->get_text());
+			}
 		}
 		text_view_input->get_buffer()->set_text("");
 	}
@@ -337,6 +349,8 @@ void ConvoWin::gotMessage(Gtk::TreeIter &iter, Glib::ustring message) {
 	Gtk::ScrolledWindow *scrolled_win = dynamic_cast<Gtk::ScrolledWindow*>((++wi)->get_widget());
 	Gtk::TextView *text_view = dynamic_cast<Gtk::TextView*>(*(scrolled_win->get_children().begin()));
 	updateTextView(text_view, label_nick->get_text(), message);
+	BuddyListEntry *buddy_entry = client_->getClient()->getBuddyList()->getBuddyById(intify(label_id->get_text()));
+	app_ptr_->getLog()->chatLog(buddy_entry->username, label_nick->get_text(), message);
 	
 	if (convonotebook_->get_current_page() != convonotebook_->page_num(*vbox)) {
 		Gtk::HBox *hbox = (Gtk::HBox *) convonotebook_->get_tab_label(*vbox);	
