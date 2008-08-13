@@ -36,13 +36,14 @@ class Application {
 		void setConfig(Config *config) { config_ = config; }
 		Config *getConfig() { return config_; }
 		void deleteConfig() { delete config_; }
-		void deleteCreatedClasses() { delete log_; delete config_; }
+		void deleteCreatedClasses() { delete log_; log_ = 0; delete config_; config_ = 0;}
 		void showLoginWin();
 		void deleteBuddyListWin();
 		void createNewClient();
 		void createNewLoginWin();
 		void createNewConvoWin();
 		void deleteConvoWin();
+		void performLogOut();
 		Gtk::Notebook_Helpers::PageIterator appendPageConvoWin(Gtk::TreeModel::iterator &iter);
 		Glib::ustring getFlamingTuxDirectory() { return Glib::get_home_dir() + "/.flamingtux/"; }
 		int checkConfigLogOption(Glib::ustring specific);

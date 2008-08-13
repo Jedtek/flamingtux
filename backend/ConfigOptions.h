@@ -9,38 +9,41 @@ class ConfigOptions {
 	public:
 		ConfigOptions(Config *config);
 		~ConfigOptions();
-		int setNickname(Glib::ustring nickname);
+		int setNickname(Glib::ustring nickname, int save = 1);
 		Glib::ustring getNickname() { return nickname_; }
-		int setUserDirectory(Glib::ustring udir);
+		int setUserDirectory(Glib::ustring udir, int save = 1);
 		Glib::ustring getUserDirectory() { return udir_; }
-		int setLogsDirectory(Glib::ustring ldir);
+		int setLogsDirectory(Glib::ustring ldir, int save = 1);
 		Glib::ustring getLogsDirectory() { return ldir_; }
-		int setLogging(Glib::ustring logging);
+		int setLogging(Glib::ustring logging, int save = 1);
 		Glib::ustring getLogging() { return logging_; }
-		int setLogAll(Glib::ustring la);
+		int setLogAll(Glib::ustring la, int save = 1);
 		Glib::ustring getLogAll() { return la_; }
-		int setLogBuddyStatus(Glib::ustring lbs);
+		int setLogBuddyStatus(Glib::ustring lbs, int save = 1);
 		Glib::ustring getLogBuddyStatus() { return lbs_; }
-		int setLogMessageSend(Glib::ustring lms);
+		int setLogMessageSend(Glib::ustring lms, int save = 1);
 		Glib::ustring getLogMessageSend() { return lms_; }
-		int setLogMessageReceive(Glib::ustring lmr);
+		int setLogMessageReceive(Glib::ustring lmr, int save = 1);
 		Glib::ustring getLogMessageReceive() { return lmr_; }
-		int setLogMain(Glib::ustring lm);
+		int setLogMain(Glib::ustring lm, int save = 1);
 		Glib::ustring getLogMain() { return lm_; }
-		int setLogError(Glib::ustring le);
+		int setLogError(Glib::ustring le, int save = 1);
 		Glib::ustring getLogError() { return le_; }
-		int setLogStatusChange(Glib::ustring lsc);
+		int setLogStatusChange(Glib::ustring lsc, int save = 1);
 		Glib::ustring getLogStatusChange() { return lsc_; }
-		int setLogBuddyRemove(Glib::ustring lbr);
+		int setLogBuddyRemove(Glib::ustring lbr, int save = 1);
 		Glib::ustring getLogBuddyRemove() { return lbr_; }
-		int setLogInviteSend(Glib::ustring lis);
+		int setLogBuddyNickChange(Glib::ustring lbn, int save = 1);
+		Glib::ustring getLogBuddyNickChange() { return lbn_; }
+		int setLogInviteSend(Glib::ustring lis, int save = 1);
 		Glib::ustring getLogInviteSend() { return lis_; }
-		int setLogInviteReceive(Glib::ustring lir);
+		int setLogInviteReceive(Glib::ustring lir, int save = 1);
 		Glib::ustring getLogInviteReceive() { return lir_; }
-		int setLogNickChange(Glib::ustring lnc);
+		int setLogNickChange(Glib::ustring lnc, int save = 1);
 		Glib::ustring getLogNickChange() { return lnc_; }
 		int setAllToDefaults();
-		
+		void syncConfigFromConfigOptions();
+		void syncConfigOptionsFromConfig();
 	private:
 		Config *config_;
 		Glib::ustring nickname_;
@@ -55,6 +58,7 @@ class ConfigOptions {
 		Glib::ustring le_;
 		Glib::ustring lsc_;
 		Glib::ustring lbr_;
+		Glib::ustring lbn_;
 		Glib::ustring lis_;
 		Glib::ustring lir_;
 		Glib::ustring lnc_;

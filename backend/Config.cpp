@@ -56,6 +56,8 @@ void Config::loadConfigOptions() {
 		config_options_->setLogInviteReceive(getOption(tmp));
 		tmp = "LNC";
 		config_options_->setLogNickChange(getOption(tmp));
+		tmp = "LBN";
+		config_options_->setLogBuddyNickChange(getOption(tmp));
 	}
 }
 

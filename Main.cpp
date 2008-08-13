@@ -3,7 +3,7 @@
  * http://flamingtux.googlecode.com 
  * This code is protected by GPLv3, please see LICENSE file for more information */
 /* Compile instructions:
-g++ $(pkg-config --libs --cflags gtkmm-2.4) $(pkg-config --libs --cflags libglademm-2.4) Main.cpp Application.cpp CommonFunctions.cpp gui/LoginWin.cpp gui/BuddyListWin.cpp gui/ConvoWin.cpp gui/DialogWin.cpp backend/FireClient.cpp backend/BackendEvents.cpp backend/Log.cpp backend/Config.cpp backend/ConfigOptions.cpp -o main -lxfirelib -lgthread-2.0 -lpthread 
+g++ $(pkg-config --libs --cflags gtkmm-2.4) $(pkg-config --libs --cflags libglademm-2.4) Main.cpp Application.cpp CommonFunctions.cpp gui/LoginWin.cpp gui/BuddyListWin.cpp gui/ConvoWin.cpp gui/DialogWin.cpp gui/PreferencesWin.cpp backend/FireClient.cpp backend/BackendEvents.cpp backend/Log.cpp backend/Config.cpp backend/ConfigOptions.cpp -o main -lxfirelib -lgthread-2.0 -lpthread 
 
 Needed Packages:
 jam (to compile xfirelib)
