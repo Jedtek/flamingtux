@@ -156,7 +156,7 @@ int Log::chatLog(Glib::ustring username, Glib::ustring nickname, Glib::ustring m
 	return 0;
 }
 
-int Log::chatLogSend(Glib::ustring username, Glib::ustring message) {
+int Log::chatLogSend(Glib::ustring username, Glib::ustring message, Glib::ustring nickname) {
 	if (!app_ptr_->checkConfigLogOption(app_ptr_->getConfig()->getConfigOptions()->getLogMessageSend()))
 		return -1;
 	Glib::ustring tmp_log_file_;
@@ -168,7 +168,7 @@ int Log::chatLogSend(Glib::ustring username, Glib::ustring message) {
 		writeError(tmp + strerror(errno));
 		return 1;	
 	}
-	log << getTimestamp() << " " << username_ << " said: " << message << endl;
+	log << getTimestamp() << " " << nickname << " said: " << message << endl;
 	log.close();
 	return 0;
 }
