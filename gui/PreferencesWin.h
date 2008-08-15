@@ -15,6 +15,7 @@ class PreferencesWin {
 		void hide() { preferenceswin_->hide(); }
 		void show() { setOptionsFromConfig(); preferenceswin_->show(); }
 	private:
+		bool onDeleteEvent(GdkEventAny *e);
 		void setOptionsFromConfig();
 		void onPOKBtnClicked();
 		void onPCancelBtnClicked();
@@ -37,6 +38,8 @@ class PreferencesWin {
 		void onLogStatusChangeCBToggled();
 		
 		Application *app_ptr_;
+		Gtk::Notebook *pnotebook_;
+		Gtk::VBox *plogoptionsvb_;
 		Gtk::Window *preferenceswin_;
 		Gtk::Button *pokbtn_;
 		Gtk::Button *papplybtn_;
