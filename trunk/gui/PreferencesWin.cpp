@@ -9,6 +9,12 @@ PreferencesWin::PreferencesWin(Glib::RefPtr<Gnome::Glade::Xml> refXml, Applicati
 	refXml->get_widget("PreferencesWin", preferenceswin_);
 	if (!preferenceswin_)
 		throw std::runtime_error("Couldn't find PreferencesWin");
+	refXml->get_widget("PNotebook", pnotebook_);
+	if (!pnotebook_)
+		throw std::runtime_error("Couldn't find PNotebook");
+	refXml->get_widget("PLogOptionsVB", plogoptionsvb_);
+	if (!plogoptionsvb_)
+		throw std::runtime_error("Couldn't find PLogOptionsVB");
 	refXml->get_widget("POKBtn", pokbtn_);
 	if (!pokbtn_)
 		throw std::runtime_error("Couldn't find POKBtn");
@@ -67,6 +73,7 @@ PreferencesWin::PreferencesWin(Glib::RefPtr<Gnome::Glade::Xml> refXml, Applicati
 	if (!plogstatuschangecb_)
 		throw std::runtime_error("Couldn't find PLogStatusChangeCB");
 	
+	preferenceswin_->signal_delete_event().connect(sigc::mem_fun(*this, &PreferencesWin::onDeleteEvent));
 	pokbtn_->signal_clicked().connect(sigc::mem_fun(*this, &PreferencesWin::onPOKBtnClicked));
 	papplybtn_->signal_clicked().connect(sigc::mem_fun(*this, &PreferencesWin::onPApplyBtnClicked));
 	pcancelbtn_->signal_clicked().connect(sigc::mem_fun(*this, &PreferencesWin::onPCancelBtnClicked));
@@ -99,6 +106,11 @@ PreferencesWin::PreferencesWin(Glib::RefPtr<Gnome::Glade::Xml> refXml, Applicati
 
 PreferencesWin::~PreferencesWin() {
 	// nothing here
+}
+
+bool PreferencesWin::onDeleteEvent(GdkEventAny *e) {
+	app_ptr_->getConfig()->getConfigOptions()->syncConfigOptionsFromConfig();
+	return false;
 }
 
 void PreferencesWin::setOptionsFromConfig() {
@@ -156,10 +168,16 @@ void PreferencesWin::onLoggingDirectoryEntryChanged() {
 
 void PreferencesWin::onLoggingCBToggled() {
 	app_ptr_->getConfig()->getConfigOptions()->setLogging(stringify(ploggingcb_->get_active()), 0);
+	plogoptionsvb_->set_sensitive( intify(app_ptr_->getConfig()->getConfigOptions()->getLogging()) &
+			(!intify(app_ptr_->getConfig()->getConfigOptions()->getLogAll())) );
+	plogallcb_->set_sensitive(ploggingcb_->get_active());
+		
 }
 
 void PreferencesWin::onLogAllCBToggled() {
 	app_ptr_->getConfig()->getConfigOptions()->setLogAll(stringify(plogallcb_->get_active()), 0);
+	plogoptionsvb_->set_sensitive( intify(app_ptr_->getConfig()->getConfigOptions()->getLogging()) &
+			(!intify(app_ptr_->getConfig()->getConfigOptions()->getLogAll())) );
 }
 
 void PreferencesWin::onLogMainCBToggled() {

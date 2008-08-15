@@ -168,10 +168,10 @@ void BuddyListWin::onBuddyRemoveDialogResponseSignal(int response_id, Gtk::TreeM
 		case(Gtk::RESPONSE_YES): {
 			/* better let that pesky backend know */
 			SendRemoveBuddyPacket removeBuddy;
-			removeBuddy.userid = (*iter)[m_Columns.m_col_id];
+ 			removeBuddy.userid = (*iter)[m_Columns.m_col_id];
 			client_->getClient()->send( &removeBuddy );
 			if (app_ptr_->checkConfigLogOption(app_ptr_->getConfig()->getConfigOptions()->getLogBuddyRemove()))
-				app_ptr_->getLog()->writeLog("Buddy removed: " + (*iter)[m_Columns.m_col_id]);
+				app_ptr_->getLog()->writeLog("Buddy removed: " + (*iter)[m_Columns.m_col_username]);
 			break;
 		}
 		case(Gtk::RESPONSE_NONE):
@@ -387,7 +387,17 @@ void BuddyListWin::addBuddyToTree(int id, Glib::ustring username, Glib::ustring 
 			childrow[m_Columns.m_col_nickname] = "[" + username + "]";
 		}
 		else {
-			childrow[m_Columns.m_col_nickname_rendered] = "<span color='Dark Green'>" + nickname + "</span>";
+			Glib::ustring markup_text("<span color='Dark Green'>" + nickname + "</span>");
+			Glib::ustring nickname_tmp(nickname);
+			if(!pango_parse_markup(markup_text.c_str(), -1, 0, NULL, NULL, NULL, NULL)) {
+				Glib::RefPtr<Glib::Regex> regexp = Glib::Regex::create("&");
+				nickname_tmp = regexp->replace(nickname, 0, "&amp;", static_cast<Glib::RegexMatchFlags>(0));
+				regexp = Glib::Regex::create("<");
+				nickname_tmp = regexp->replace(nickname_tmp, 0, "&lt;", static_cast<Glib::RegexMatchFlags>(0));
+				regexp = Glib::Regex::create(">");
+				nickname_tmp = regexp->replace(nickname_tmp, 0, "&gt;", static_cast<Glib::RegexMatchFlags>(0));
+			}
+			childrow[m_Columns.m_col_nickname_rendered] = "<span color='Dark Green'>" + nickname_tmp + "</span>";
 			childrow[m_Columns.m_col_nickname] = nickname;
 		}
 		childrow[m_Columns.m_col_username] = username;
@@ -404,7 +414,17 @@ void BuddyListWin::addBuddyToTree(int id, Glib::ustring username, Glib::ustring 
 			childrow[m_Columns.m_col_nickname] = "[" + username + "]";
 		}
 		else {
-			childrow[m_Columns.m_col_nickname_rendered] = "<span color='Dark Blue'>" + nickname + "</span>";
+			Glib::ustring markup_text("<span color='Dark Green'>" + nickname + "</span>");
+			Glib::ustring nickname_tmp(nickname);
+			if(!pango_parse_markup(markup_text.c_str(), -1, 0, NULL, NULL, NULL, NULL)) {
+				Glib::RefPtr<Glib::Regex> regexp = Glib::Regex::create("&");
+				nickname_tmp = regexp->replace(nickname, 0, "&amp;", static_cast<Glib::RegexMatchFlags>(0));
+				regexp = Glib::Regex::create("<");
+				nickname_tmp = regexp->replace(nickname_tmp, 0, "&lt;", static_cast<Glib::RegexMatchFlags>(0));
+				regexp = Glib::Regex::create(">");
+				nickname_tmp = regexp->replace(nickname_tmp, 0, "&gt;", static_cast<Glib::RegexMatchFlags>(0));
+			}
+			childrow[m_Columns.m_col_nickname_rendered] = "<span color='Dark Blue'>" + nickname_tmp + "</span>";
 			childrow[m_Columns.m_col_nickname] = nickname;
 		}
 		childrow[m_Columns.m_col_username] = username;
@@ -428,7 +448,7 @@ bool BuddyListWin::onQueryTooltip(int x, int y, bool keyboard_tooltip, const Gli
 		return FALSE;
 	Gtk::TreeModel::iterator iter = buddyview_->get_model()->get_iter(path);
 	Glib::ustring text;
-	text += "<b>" + (*iter)[m_Columns.m_col_nickname] + "</b>\n";
+	text += "<b>" + (*iter)[m_Columns.m_col_nickname_rendered] + "</b>\n";
 	text += (*iter)[m_Columns.m_col_username];
 	text += "\nStatus : ";
 	text += (*iter)[m_Columns.m_col_status];
