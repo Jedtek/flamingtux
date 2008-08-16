@@ -24,19 +24,28 @@ class ConvoWin : public Gtk::Window {
 		Gtk::Notebook_Helpers::PageIterator appendPage(Gtk::TreeModel::iterator &iter);
 		void gotMessage(Gtk::TreeIter &iter, Glib::ustring message);
 		void updatePage(Gtk::TreeModel::Row childrow);
+		void updateTextViewInputFontAndColor();
 	private:
-		//Glib::usrting offline_msg = "The user is currently offline";
+		//Glib::ustring offline_msg = "The user is currently offline";
 		void onCloseMenuItem();
 		void updateStatusTextView(Gtk::TextView *text_view, Glib::ustring nickname, int status);
 		void closeTab(Gtk::VBox *notebook_vbox);
 		void onCloseTabClicked(Gtk::VBox *notebook_vbox);
 		virtual bool onDeleteEvent(GdkEventAny *e);
+		void onCloseDialogResponseSignal(int response_id, Gtk::MessageDialog *dialog);
 		void onWindowStateEvent(GdkEventWindowState* event);
 		void onPageRemoved(Gtk::Widget* page, guint page_num);
 		void onPageSwitched(GtkNotebookPage* page, guint page_num);
 		void onSendButtonPressed(Gtk::VBox *vbox, Gtk::TreeModel::iterator &iter);
 		void updateTextView(Gtk::TextView *text_view, Glib::ustring nickname, Glib::ustring text);
 		void onVScrollValueChange(Gtk::ScrolledWindow *scrolled_win);
+		void onTextBufferInputChanged(Glib::RefPtr<Gtk::TextBuffer> buffer);
+		Gtk::TextView *getTextViewInput(Gtk::VBox *vbox);
+		Gtk::TextView *getTextView(Gtk::VBox *vbox);
+		Gtk::Label *getLabelId(Gtk::VBox *vbox);
+		Gtk::Label *getLabelNick(Gtk::VBox *vbox);
+		Gtk::Label *getLabel(Gtk::VBox *vbox);
+		
 		Gtk::Window *convowin_;
 		Glib::RefPtr<Gnome::Glade::Xml> refXml_;
 		Gtk::Notebook *convonotebook_;
