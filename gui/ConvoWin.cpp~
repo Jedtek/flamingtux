@@ -333,6 +333,7 @@ void ConvoWin::onSendButtonPressed(Gtk::VBox *vbox, Gtk::TreeModel::iterator &it
 }
 
 void ConvoWin::updateTextView(Gtk::TextView *text_view, Glib::ustring nickname, Glib::ustring text) {
+	cout << "UPDATING TEXT VIEW..." << endl;
 	Glib::RefPtr<Gtk::TextBuffer> refBuffer = text_view->get_buffer();
 	
 	Glib::RefPtr<Gtk::TextBuffer::Tag> refTagMatch;
@@ -366,7 +367,6 @@ void ConvoWin::updateTextView(Gtk::TextView *text_view, Glib::ustring nickname, 
 	gtkTextBufferInsertMarkupWithTag(refBuffer, refBuffer->end(), nickname_copy, "fforeground");
 	refBuffer->insert_with_tag(refBuffer->end(), " says :", "fforeground");
 	refBuffer->insert(refBuffer->end(), "\n");
-	//refBuffer->insert(refBuffer->end(), text);
 	gtkTextBufferInsertMarkup(refBuffer, refBuffer->end(), text);
 // 	Glib::RefPtr<Gtk::TextBuffer::TagTable> refTagTable = Gtk::TextBuffer::TagTable::create();
 // 	refTagTable->add(refTagMatch);
@@ -435,8 +435,8 @@ void ConvoWin::updatePage(Gtk::TreeModel::Row childrow) {
 
 void ConvoWin::updateTextViewInputStyle() {
 	
-		Gtk::VBox *vbox;
-		Gtk::TextView *text_view_input;
+	Gtk::VBox *vbox;
+	Gtk::TextView *text_view_input;
 		
 	for(int i = 0; i != convonotebook_->get_n_pages(); i++) {
 		vbox = (Gtk::VBox *) (convonotebook_->get_nth_page(i));
@@ -483,6 +483,10 @@ void ConvoWin::gotMessage(Gtk::TreeIter &iter, Glib::ustring message) {
 	Gtk::Label *label_id = getLabelId(vbox);
 	Gtk::Label *label_nick = getLabelNick(vbox);
 	Gtk::Label *label = getLabel(vbox);
+	
+	Gtk::TextView *text_view = getTextView(vbox);
+	updateTextView(text_view, label_nick->get_text(), message);
+	
 	BuddyListEntry *buddy_entry = client_->getClient()->getBuddyList()->getBuddyById(intify(label_id->get_text()));
 	app_ptr_->getLog()->chatLog(buddy_entry->username, label_nick->get_text(), message);
 	
