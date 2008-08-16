@@ -23,6 +23,7 @@ class PreferencesWin {
 		void onNicknameEntryChanged();
 		void onUserDirectoryEntryChanged();
 		void onLoggingDirectoryEntryChanged();
+		void onEnableStyleCBToggled();
 		void onFontBtnFontSet();
 		void onColorBtnColorSet();
 		void onLoggingCBToggled();
@@ -49,6 +50,7 @@ class PreferencesWin {
 		Gtk::Entry *pnicknameentry_;
 		Gtk::Entry *puserdirectoryentry_;
 		Gtk::Entry *ploggingdirectoryentry_;
+		Gtk::CheckButton *penablestylecb_;
 		Gtk::FontButton *pfontbtn_;
 		Gtk::ColorButton *pcolorbtn_;
 		Gtk::CheckButton *ploggingcb_;

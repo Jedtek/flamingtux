@@ -23,8 +23,9 @@ class PreferencesWin {
 		void onNicknameEntryChanged();
 		void onUserDirectoryEntryChanged();
 		void onLoggingDirectoryEntryChanged();
+		void onEnableStyleCBToggled();
 		void onFontBtnFontSet();
-		void onColorBtnFontSet();
+		void onColorBtnColorSet();
 		void onLoggingCBToggled();
 		void onLogAllCBToggled();
 		void onLogErrorCBToggled();

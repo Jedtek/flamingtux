@@ -32,6 +32,8 @@ void Config::loadConfigOptions() {
 		config_options_->setUserDirectory(getOption(tmp));
 		tmp = "LD";
 		config_options_->setLogsDirectory(getOption(tmp));
+		tmp = "ES";
+		config_options_->setEnableStyle(getOption(tmp));
 		tmp = "F";
 		config_options_->setFont(getOption(tmp));
 		tmp = "C";
