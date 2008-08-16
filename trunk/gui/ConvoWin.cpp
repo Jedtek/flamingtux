@@ -366,7 +366,6 @@ void ConvoWin::updateTextView(Gtk::TextView *text_view, Glib::ustring nickname, 
 	gtkTextBufferInsertMarkupWithTag(refBuffer, refBuffer->end(), nickname_copy, "fforeground");
 	refBuffer->insert_with_tag(refBuffer->end(), " says :", "fforeground");
 	refBuffer->insert(refBuffer->end(), "\n");
-	//refBuffer->insert(refBuffer->end(), text);
 	gtkTextBufferInsertMarkup(refBuffer, refBuffer->end(), text);
 // 	Glib::RefPtr<Gtk::TextBuffer::TagTable> refTagTable = Gtk::TextBuffer::TagTable::create();
 // 	refTagTable->add(refTagMatch);
@@ -483,6 +482,10 @@ void ConvoWin::gotMessage(Gtk::TreeIter &iter, Glib::ustring message) {
 	Gtk::Label *label_id = getLabelId(vbox);
 	Gtk::Label *label_nick = getLabelNick(vbox);
 	Gtk::Label *label = getLabel(vbox);
+	
+	Gtk::TextView *text_view = getTextView(vbox);
+	updateTextView(text_view, label_nick->get_text(), message);
+	
 	BuddyListEntry *buddy_entry = client_->getClient()->getBuddyList()->getBuddyById(intify(label_id->get_text()));
 	app_ptr_->getLog()->chatLog(buddy_entry->username, label_nick->get_text(), message);
 	
