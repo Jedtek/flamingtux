@@ -15,6 +15,10 @@ class ConfigOptions {
 		Glib::ustring getUserDirectory() { return udir_; }
 		int setLogsDirectory(Glib::ustring ldir, int save = 1);
 		Glib::ustring getLogsDirectory() { return ldir_; }
+		int setFont(Glib::ustring font, int save = 1);
+		Glib::ustring getFont() { return font_; }
+		int setColor(Glib::ustring color, int save = 1);
+		Glib::ustring getColor() { return color_; }
 		int setLogging(Glib::ustring logging, int save = 1);
 		Glib::ustring getLogging() { return logging_; }
 		int setLogAll(Glib::ustring la, int save = 1);
@@ -49,6 +53,8 @@ class ConfigOptions {
 		Glib::ustring nickname_;
 		Glib::ustring udir_;
 		Glib::ustring ldir_;
+		Glib::ustring font_;
+		Glib::ustring color_;
 		Glib::ustring logging_;
 		Glib::ustring la_;
 		Glib::ustring lbs_;

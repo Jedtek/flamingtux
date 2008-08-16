@@ -35,6 +35,22 @@ int ConfigOptions::setLogsDirectory(Glib::ustring ldir, int save) {
 	else return 1;
 }
 
+int ConfigOptions::setFont(Glib::ustring font, int save) {
+	font_ = font;
+	Glib::ustring tmp("F");
+	if (save)
+		return config_->setOption(tmp, font_, 1);
+	else return 1;
+}
+
+int ConfigOptions::setColor(Glib::ustring color, int save) {
+	color_ = color;
+	Glib::ustring tmp("C");
+	if (save)
+		return config_->setOption(tmp, color_, 1);
+	else return 1;
+}
+
 int ConfigOptions::setLogging(Glib::ustring logging, int save) {
 	logging_ = logging;
 	Glib::ustring tmp("L");
@@ -145,6 +161,8 @@ int ConfigOptions::setAllToDefaults() {
 	string tmp = Glib::get_home_dir() + "/.flamingtux/";
 	setUserDirectory(tmp + config_->getUsername());
 	setLogsDirectory(tmp + config_->getUsername() + "/logs/");
+	setFont("Sans 10");
+	setColor("black");
 	setLogging("1");
 	setLogAll("1");
 	setLogBuddyStatus("1");
@@ -165,6 +183,8 @@ void ConfigOptions::syncConfigFromConfigOptions() {
 	setNickname(getNickname());
 	setUserDirectory(getUserDirectory());
 	setLogsDirectory(getLogsDirectory());
+	setFont(getFont());
+	setColor(getColor());
 	setLogging(getLogging());
 	setLogAll(getLogAll());
 	setLogBuddyStatus(getLogBuddyStatus());
@@ -187,6 +207,10 @@ void ConfigOptions::syncConfigOptionsFromConfig() {
 	setUserDirectory(config_->getOption(tmp), 0);
 	tmp = "LD";
 	setLogsDirectory(config_->getOption(tmp), 0);
+	tmp = "F";
+	setFont(config_->getOption(tmp), 0);
+	tmp = "C";
+	setColor(config_->getOption(tmp), 0);
 	tmp = "L";
 	setLogging(config_->getOption(tmp), 0);
 	tmp = "LA";

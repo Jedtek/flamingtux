@@ -24,6 +24,7 @@ class ConvoWin : public Gtk::Window {
 		Gtk::Notebook_Helpers::PageIterator appendPage(Gtk::TreeModel::iterator &iter);
 		void gotMessage(Gtk::TreeIter &iter, Glib::ustring message);
 		void updatePage(Gtk::TreeModel::Row childrow);
+		void updateTextViewInputStyle();
 	private:
 		//Glib::ustring offline_msg = "The user is currently offline";
 		void onCloseMenuItem();
@@ -38,6 +39,13 @@ class ConvoWin : public Gtk::Window {
 		void onSendButtonPressed(Gtk::VBox *vbox, Gtk::TreeModel::iterator &iter);
 		void updateTextView(Gtk::TextView *text_view, Glib::ustring nickname, Glib::ustring text);
 		void onVScrollValueChange(Gtk::ScrolledWindow *scrolled_win);
+		void onTextBufferInputChanged(Glib::RefPtr<Gtk::TextBuffer> buffer);
+		Gtk::TextView *getTextViewInput(Gtk::VBox *vbox);
+		Gtk::TextView *getTextView(Gtk::VBox *vbox);
+		Gtk::Label *getLabelId(Gtk::VBox *vbox);
+		Gtk::Label *getLabelNick(Gtk::VBox *vbox);
+		Gtk::Label *getLabel(Gtk::VBox *vbox);
+		
 		Gtk::Window *convowin_;
 		Glib::RefPtr<Gnome::Glade::Xml> refXml_;
 		Gtk::Notebook *convonotebook_;

@@ -12,9 +12,11 @@
 
 #include <libglademm/xml.h>
 #include <gtkmm.h>
+#include <gtk/gtk.h>
 #include "../Application.h"
 #include "../ModelColumns.h"
 #include "../CommonFunctions.h"
+#include "../backend/GtkHelperFunctions.h"
 
 using namespace std;
 using namespace xfirelib;
@@ -133,7 +135,17 @@ Gtk::Notebook_Helpers::PageIterator ConvoWin::appendPage(Gtk::TreeModel::iterato
 	Gtk::VBox *notebook_vbox = new Gtk::VBox();
 	Gtk::HBox *entry_hbox = new Gtk::HBox();
 	Gtk::Button *entry_btn = new Gtk::Button("Send");
-	Gtk::Label *label = new Gtk::Label("To: " + (*iter)[m_Columns.m_col_nickname] + " <" + (*iter)[m_Columns.m_col_status] + '>');
+	Gtk::Label *label = new Gtk::Label();
+	Glib::ustring nickname_copy((*iter)[m_Columns.m_col_nickname]);
+	if(!pango_parse_markup(nickname_copy.c_str(), -1, 0, NULL, NULL, NULL, NULL)) {
+		Glib::RefPtr<Glib::Regex> regexp = Glib::Regex::create("&");
+		nickname_copy = regexp->replace(nickname_copy, 0, "&amp;", static_cast<Glib::RegexMatchFlags>(0));
+		regexp = Glib::Regex::create("<");
+		nickname_copy = regexp->replace(nickname_copy, 0, "&lt;", static_cast<Glib::RegexMatchFlags>(0));
+		regexp = Glib::Regex::create(">");
+		nickname_copy = regexp->replace(nickname_copy, 0, "&gt;", static_cast<Glib::RegexMatchFlags>(0));
+	}
+	label->set_markup("To: " + nickname_copy + " &lt;" + (*iter)[m_Columns.m_col_status] + "&gt;");
 	Gtk::Label *label_id = new Gtk::Label();
 	Gtk::Label *label_nick = new Gtk::Label((*iter)[m_Columns.m_col_nickname]);
 	label_id->set_label(stringify((*iter)[m_Columns.m_col_id]));
@@ -146,9 +158,15 @@ Gtk::Notebook_Helpers::PageIterator ConvoWin::appendPage(Gtk::TreeModel::iterato
 	text_view->set_wrap_mode(Gtk::WRAP_WORD);
 	Gtk::TextView *text_view2 = new Gtk::TextView();
 	text_view2->set_wrap_mode(Gtk::WRAP_WORD);
+	Glib::RefPtr<Gtk::TextBuffer::Tag> refTagMatch = text_view2->get_buffer()->create_tag("inputtag");
+	refTagMatch->property_font() = app_ptr_->getConfig()->getConfigOptions()->getFont();
+	refTagMatch->property_foreground() = app_ptr_->getConfig()->getConfigOptions()->getColor();
 	
 	/* create the page label with close button */
+	Gtk::VPaned *vpaned = Gtk::manage(new Gtk::VPaned);
+	Gtk::VBox *entry_vbox = Gtk::manage(new Gtk::VBox);
 	Gtk::HBox *page_hbox = Gtk::manage(new Gtk::HBox);
+	Gtk::HBox *buttons_hbox = Gtk::manage(new Gtk::HBox);
 	Gtk::Label *page_label = Gtk::manage(new Gtk::Label());
 	page_label->set_markup((*iter)[m_Columns.m_col_username]);
 	//Gtk::EventBox *page_eb = Gtk::manage(new Gtk::EventBox);
@@ -169,10 +187,16 @@ Gtk::Notebook_Helpers::PageIterator ConvoWin::appendPage(Gtk::TreeModel::iterato
 	notebook_vbox->pack_start(*label_id, false, false, 0);
 	notebook_vbox->pack_start(*label_nick, false, false, 0);
 	notebook_vbox->pack_start(*label, false, false, 0);
-	notebook_vbox->pack_start(*scrolled_win, true, true, 0);
-	notebook_vbox->pack_start(*entry_hbox, false, false, 5);
+	notebook_vbox->pack_start(*vpaned, true, true, 0);
+// 	notebook_vbox->pack_start(*scrolled_win, true, true, 0);
+// 	notebook_vbox->pack_start(*entry_hbox, false, false, 5);
+	vpaned->pack1(*scrolled_win);
+	vpaned->pack2(*entry_vbox);
+	entry_vbox->pack_start(*buttons_hbox, false, false, 0);
+	entry_vbox->pack_start(*entry_hbox, true, true, 0);
 	entry_hbox->pack_start(*scrolled_win2, true, true, 0);
 	entry_hbox->pack_start(*entry_btn, false, false, 0);
+	vpaned->set_position(260);
 	
 	/* add it to the notebook */
 	convonotebook_->append_page(*notebook_vbox, *page_hbox);
@@ -181,6 +205,9 @@ Gtk::Notebook_Helpers::PageIterator ConvoWin::appendPage(Gtk::TreeModel::iterato
 	page_hbox->show_all_children();
 	notebook_vbox->show();
 	label->show();
+	vpaned->show();
+	entry_vbox->show();
+	buttons_hbox->show();
 	scrolled_win->show();
 	text_view->show();
 	scrolled_win2->show();
@@ -203,22 +230,72 @@ Gtk::Notebook_Helpers::PageIterator ConvoWin::appendPage(Gtk::TreeModel::iterato
 	//convonotebook_->set_current_page(convonotebook_->page_num(*notebook_vbox));
 	
 	scrolled_win->get_vscrollbar()->get_adjustment()->signal_changed().connect(sigc::bind(mem_fun(*this,&ConvoWin::onVScrollValueChange), scrolled_win));
+	text_view2->get_buffer()->signal_changed().connect(sigc::bind(mem_fun(*this,&ConvoWin::onTextBufferInputChanged), text_view2->get_buffer()));
 				 
 	return i;
+}
+
+void ConvoWin::onTextBufferInputChanged(Glib::RefPtr<Gtk::TextBuffer> buffer) {
+	buffer->apply_tag_by_name("inputtag", buffer->begin(), buffer->end());
+}
+
+Gtk::TextView *ConvoWin::getTextViewInput(Gtk::VBox *vbox) {
+	Gtk::Box_Helpers::BoxList::iterator wi = vbox->children().begin();
+	Gtk::Label *label_id = dynamic_cast<Gtk::Label*>(wi->get_widget());
+	Gtk::Label *label_nick = dynamic_cast<Gtk::Label*>((++wi)->get_widget());
+	Gtk::Label *label = dynamic_cast<Gtk::Label*>((++wi)->get_widget());
+	Gtk::VPaned *vpaned = dynamic_cast<Gtk::VPaned*>((++wi)->get_widget());
+	Gtk::VBox *entry_vbox = dynamic_cast<Gtk::VBox*>(vpaned->get_child2());
+	Gtk::Box_Helpers::BoxList::iterator wi2 = entry_vbox->children().begin();
+	Gtk::HBox *entry_hbox = dynamic_cast<Gtk::HBox*>((++wi2)->get_widget());
+	Gtk::ScrolledWindow *scrolled_win2 = dynamic_cast<Gtk::ScrolledWindow*>((entry_hbox->children().begin())->get_widget());
+	Gtk::TextView *text_view_input = dynamic_cast<Gtk::TextView*>(*(scrolled_win2->get_children().begin()));
+	
+	return text_view_input;
+}
+
+Gtk::TextView *ConvoWin::getTextView(Gtk::VBox *vbox) {
+	Gtk::Box_Helpers::BoxList::iterator wi = vbox->children().begin();
+	Gtk::Label *label_id = dynamic_cast<Gtk::Label*>(wi->get_widget());
+	Gtk::Label *label_nick = dynamic_cast<Gtk::Label*>((++wi)->get_widget());
+	Gtk::Label *label = dynamic_cast<Gtk::Label*>((++wi)->get_widget());
+	Gtk::VPaned *vpaned = dynamic_cast<Gtk::VPaned*>((++wi)->get_widget());
+	Gtk::ScrolledWindow *scrolled_win = dynamic_cast<Gtk::ScrolledWindow*>(vpaned->get_child1());
+	Gtk::TextView *text_view = dynamic_cast<Gtk::TextView*>(*(scrolled_win->get_children().begin()));
+	
+	return text_view;
+}
+
+Gtk::Label *ConvoWin::getLabelId(Gtk::VBox *vbox) {
+	Gtk::Box_Helpers::BoxList::iterator wi = vbox->children().begin();
+	Gtk::Label *label_id = dynamic_cast<Gtk::Label*>(wi->get_widget());
+	
+	return label_id;
+}
+
+Gtk::Label *ConvoWin::getLabelNick(Gtk::VBox *vbox) {
+	Gtk::Box_Helpers::BoxList::iterator wi = vbox->children().begin();
+	Gtk::Label *label_id = dynamic_cast<Gtk::Label*>(wi->get_widget());
+	Gtk::Label *label_nick = dynamic_cast<Gtk::Label*>((++wi)->get_widget());
+	
+	return label_nick;
+}
+
+Gtk::Label *ConvoWin::getLabel(Gtk::VBox *vbox) {
+	Gtk::Box_Helpers::BoxList::iterator wi = vbox->children().begin();
+	Gtk::Label *label_id = dynamic_cast<Gtk::Label*>(wi->get_widget());
+	Gtk::Label *label_nick = dynamic_cast<Gtk::Label*>((++wi)->get_widget());
+	Gtk::Label *label = dynamic_cast<Gtk::Label*>((++wi)->get_widget());
+	
+	return label;
 }
 
 void ConvoWin::onSendButtonPressed(Gtk::VBox *vbox, Gtk::TreeModel::iterator &iter) {
 	ModelColumns m_Columns;
 	
-	Gtk::Box_Helpers::BoxList::iterator wi = vbox->children().begin();
-	Gtk::Label *label_id = dynamic_cast<Gtk::Label*>(wi->get_widget());
-	Gtk::Label *label_nick = dynamic_cast<Gtk::Label*>((++wi)->get_widget());
-	Gtk::Label *label = dynamic_cast<Gtk::Label*>((++wi)->get_widget());
-	Gtk::ScrolledWindow *scrolled_win = dynamic_cast<Gtk::ScrolledWindow*>((++wi)->get_widget());
-	Gtk::TextView *text_view = dynamic_cast<Gtk::TextView*>(*(scrolled_win->get_children().begin()));
-	Gtk::HBox *entry_hbox = dynamic_cast<Gtk::HBox*>((++wi)->get_widget());
-	Gtk::ScrolledWindow *scrolled_win2 = dynamic_cast<Gtk::ScrolledWindow*>((entry_hbox->children().begin())->get_widget());
-	Gtk::TextView *text_view_input = dynamic_cast<Gtk::TextView*>(*(scrolled_win2->get_children().begin()));
+	Gtk::Label *label_id = getLabelId(vbox);
+	Gtk::TextView *text_view = getTextView(vbox);
+	Gtk::TextView *text_view_input = getTextViewInput(vbox);
 	
 	BuddyListEntry *buddy_entry = client_->getClient()->getBuddyList()->getBuddyById(intify(label_id->get_text()));
 	
@@ -228,12 +305,24 @@ void ConvoWin::onSendButtonPressed(Gtk::VBox *vbox, Gtk::TreeModel::iterator &it
 		if (text_view_input->get_buffer()->get_text() == "")
 			;// do nothing
 		else {
-			if (client_->sendMessage(buddy_entry->username, text_view_input->get_buffer()->get_text()) == true) {
+			Glib::ustring text = text_view_input->get_buffer()->get_text();
+			if(!pango_parse_markup(text.c_str(), -1, 0, NULL, NULL, NULL, NULL)) {
+				Glib::RefPtr<Glib::Regex> regexp = Glib::Regex::create("&");
+				text = regexp->replace(text, 0, "&amp;", static_cast<Glib::RegexMatchFlags>(0));
+				regexp = Glib::Regex::create("<");
+				text = regexp->replace(text, 0, "&lt;", static_cast<Glib::RegexMatchFlags>(0));
+				regexp = Glib::Regex::create(">");
+				text = regexp->replace(text, 0, "&gt;", static_cast<Glib::RegexMatchFlags>(0));
+			}
+			Glib::ustring span_tmp("<span font_desc='" + app_ptr_->getConfig()->getConfigOptions()->getFont() + "'><span foreground='" + app_ptr_->getConfig()->getConfigOptions()->getColor() + "'>");
+			text.insert(0, span_tmp);
+			text.append("</span></span>");
+			if (client_->sendMessage(buddy_entry->username, text) == true) {
 				Glib::ustring nickname = app_ptr_->getConfig()->getConfigOptions()->getNickname();
 				if (nickname == "")
 					nickname = "[" + client_->getUsername() + "]";
-				updateTextView(text_view, nickname, text_view_input->get_buffer()->get_text());
-				app_ptr_->getLog()->chatLogSend(buddy_entry->username, text_view_input->get_buffer()->get_text());
+				updateTextView(text_view, nickname, text);
+				app_ptr_->getLog()->chatLogSend(buddy_entry->username, text, nickname);
 			}
 		}
 		text_view_input->get_buffer()->set_text("");
@@ -243,8 +332,9 @@ void ConvoWin::onSendButtonPressed(Gtk::VBox *vbox, Gtk::TreeModel::iterator &it
 void ConvoWin::updateTextView(Gtk::TextView *text_view, Glib::ustring nickname, Glib::ustring text) {
 	Glib::RefPtr<Gtk::TextBuffer> refBuffer = text_view->get_buffer();
 	
-	if (!refBuffer->get_tag_table()->lookup("foreground")) {
-		Glib::RefPtr<Gtk::TextBuffer::Tag> refTagMatch = refBuffer->create_tag("foreground");
+	Glib::RefPtr<Gtk::TextBuffer::Tag> refTagMatch;
+	if (!refBuffer->get_tag_table()->lookup("fforeground")) {
+		Glib::RefPtr<Gtk::TextBuffer::Tag> refTagMatch = refBuffer->create_tag("fforeground");
 		refTagMatch->property_foreground() = "dark grey";
 	}
 	
@@ -257,10 +347,24 @@ void ConvoWin::updateTextView(Gtk::TextView *text_view, Glib::ustring nickname, 
 
 	strftime (buffer, 15, "[%I:%M:%S %p]", timeinfo);
 	
-	string x(buffer);
+	Glib::ustring buffer_copy(buffer);
+	
+	Glib::ustring nickname_copy = nickname;
+	if(!pango_parse_markup(nickname_copy.c_str(), -1, 0, NULL, NULL, NULL, NULL)) {
+		Glib::RefPtr<Glib::Regex> regexp = Glib::Regex::create("&");
+		nickname_copy = regexp->replace(nickname_copy, 0, "&amp;", static_cast<Glib::RegexMatchFlags>(0));
+		regexp = Glib::Regex::create("<");
+		nickname_copy = regexp->replace(nickname_copy, 0, "&lt;", static_cast<Glib::RegexMatchFlags>(0));
+		regexp = Glib::Regex::create(">");
+		nickname_copy = regexp->replace(nickname_copy, 0, "&gt;", static_cast<Glib::RegexMatchFlags>(0));
+	}
 	//BuddyListEntry *buddy_entry = client_->getClient()->getBuddyList->getBuddyById(intify(label_id->get_text()))
-	refBuffer->insert_with_tag(refBuffer->end(), '\n' + x + ' ' + nickname + " says :", "foreground");
-	refBuffer->insert(refBuffer->end(), "\n" + text);
+	refBuffer->insert_with_tag(refBuffer->end(), '\n' + buffer_copy + ' ', "fforeground");
+	gtkTextBufferInsertMarkupWithTag(refBuffer, refBuffer->end(), nickname_copy, "fforeground");
+	refBuffer->insert_with_tag(refBuffer->end(), " says :", "fforeground");
+	refBuffer->insert(refBuffer->end(), "\n");
+	//refBuffer->insert(refBuffer->end(), text);
+	gtkTextBufferInsertMarkup(refBuffer, refBuffer->end(), text);
 // 	Glib::RefPtr<Gtk::TextBuffer::TagTable> refTagTable = Gtk::TextBuffer::TagTable::create();
 // 	refTagTable->add(refTagMatch);
 }
@@ -289,8 +393,7 @@ void ConvoWin::updatePage(Gtk::TreeModel::Row childrow) {
 	if (convonotebook_->get_n_pages()) {
 		for (i = convonotebook_->pages().begin(); i != convonotebook_->pages().end(); i++) {
 			vbox = dynamic_cast<Gtk::VBox*>(i->get_child());
-			bi = vbox->children().begin();;
-			label_id = dynamic_cast<Gtk::Label*>(bi->get_widget());
+			label_id = getLabelId(vbox);
 			if (intify(label_id->get_text()) == childrow[m_Columns.m_col_id]) {
 				break;
 			}
@@ -298,15 +401,20 @@ void ConvoWin::updatePage(Gtk::TreeModel::Row childrow) {
 		if (i == convonotebook_->pages().end())
 			;// do nothing
 		else {
-			Gtk::Label *label_nick = dynamic_cast<Gtk::Label*>((++bi)->get_widget());
-			Gtk::Label *label = dynamic_cast<Gtk::Label*>((++bi)->get_widget());
-			Gtk::ScrolledWindow *scrolled_win = dynamic_cast<Gtk::ScrolledWindow*>((++bi)->get_widget());
-			Gtk::TextView *text_view = dynamic_cast<Gtk::TextView*>(*(scrolled_win->get_children().begin()));
-			Gtk::HBox *entry_hbox = dynamic_cast<Gtk::HBox*>((++bi)->get_widget());
-			Gtk::ScrolledWindow *scrolled_win2 = dynamic_cast<Gtk::ScrolledWindow*>((entry_hbox->children().begin())->get_widget());
-			Gtk::TextView *text_view2 = dynamic_cast<Gtk::TextView*>(*(scrolled_win2->get_children().begin()));
+			Gtk::Label *label_nick = getLabelNick(vbox);
+			Gtk::Label *label = getLabel(vbox);
+			Gtk::TextView *text_view2 = getTextViewInput(vbox);
 			label_nick->set_text(childrow[m_Columns.m_col_nickname]);
-			label->set_text("To: " + childrow[m_Columns.m_col_nickname] + " <" + childrow[m_Columns.m_col_status] + '>');
+			Glib::ustring nickname_copy(childrow[m_Columns.m_col_nickname]);
+			if(!pango_parse_markup(nickname_copy.c_str(), -1, 0, NULL, NULL, NULL, NULL)) {
+				Glib::RefPtr<Glib::Regex> regexp = Glib::Regex::create("&");
+				nickname_copy = regexp->replace(nickname_copy, 0, "&amp;", static_cast<Glib::RegexMatchFlags>(0));
+				regexp = Glib::Regex::create("<");
+				nickname_copy = regexp->replace(nickname_copy, 0, "&lt;", static_cast<Glib::RegexMatchFlags>(0));
+				regexp = Glib::Regex::create(">");
+				nickname_copy = regexp->replace(nickname_copy, 0, "&gt;", static_cast<Glib::RegexMatchFlags>(0));
+			}
+			label->set_markup("To: " + nickname_copy + " &lt;" + childrow[m_Columns.m_col_status] + "&gt;");
 			if (childrow[m_Columns.m_col_status] == "Offline") {
 				//updateStatusTextView(text_view, childrow[m_Columns.m_col_nickname], 0);
 				//text_view2->get_buffer()->set_text(offline_msg);
@@ -318,6 +426,27 @@ void ConvoWin::updatePage(Gtk::TreeModel::Row childrow) {
 				text_view2->set_sensitive(true);
 			}
 		}
+	}
+	
+}
+
+void ConvoWin::updateTextViewInputStyle() {
+	
+	Gtk::VBox *vbox;
+	Gtk::TextView *text_view_input;
+	
+	for(int i = 0; i != convonotebook_->get_n_pages(); i++) {
+		vbox = (Gtk::VBox *) (convonotebook_->get_nth_page(i));
+		text_view_input = getTextViewInput(vbox);
+		cout << "LALALALA IS: " << text_view_input << endl;
+		Glib::RefPtr<Gtk::TextBuffer::Tag> refTagMatch =
+				text_view_input->get_buffer()->get_tag_table()->lookup("inputtag");
+		refTagMatch->property_font() = app_ptr_->getConfig()->getConfigOptions()->getFont();
+		refTagMatch->property_foreground() = app_ptr_->getConfig()->getConfigOptions()->getColor();
+		text_view_input->get_buffer()->apply_tag_by_name("inputtag", text_view_input->get_buffer()->begin(),
+					    text_view_input->get_buffer()->end());
+		
+		
 	}
 	
 }
@@ -342,20 +471,15 @@ void ConvoWin::gotMessage(Gtk::TreeIter &iter, Glib::ustring message) {
 // 	}
 	
 	Gtk::VBox *vbox = dynamic_cast<Gtk::VBox*>(i->get_child());
-	Gtk::Box_Helpers::BoxList::iterator wi = vbox->children().begin();
-	Gtk::Label *label_id = dynamic_cast<Gtk::Label*>(wi->get_widget());
-	Gtk::Label *label_nick = dynamic_cast<Gtk::Label*>((++wi)->get_widget());
-	Gtk::Label *label = dynamic_cast<Gtk::Label*>((++wi)->get_widget());
-	Gtk::ScrolledWindow *scrolled_win = dynamic_cast<Gtk::ScrolledWindow*>((++wi)->get_widget());
-	Gtk::TextView *text_view = dynamic_cast<Gtk::TextView*>(*(scrolled_win->get_children().begin()));
-	updateTextView(text_view, label_nick->get_text(), message);
+	Gtk::Label *label_id = getLabelId(vbox);
+	Gtk::Label *label_nick = getLabelNick(vbox);
+	Gtk::Label *label = getLabel(vbox);
 	BuddyListEntry *buddy_entry = client_->getClient()->getBuddyList()->getBuddyById(intify(label_id->get_text()));
 	app_ptr_->getLog()->chatLog(buddy_entry->username, label_nick->get_text(), message);
 	
 	if (convonotebook_->get_current_page() != convonotebook_->page_num(*vbox)) {
 		Gtk::HBox *hbox = (Gtk::HBox *) convonotebook_->get_tab_label(*vbox);	
 		Gtk::Label *label = dynamic_cast<Gtk::Label *>((hbox->children().begin())->get_widget());
-// 		Gtk::Label *label = dynamic_cast<Gtk::Label *>(*(eb->get_children().begin()));
 		label->set_markup("<b><span color='Red'>" + label->get_text() + "</span></b>");
 		convowin_->set_urgency_hint(true);
 	}
@@ -376,22 +500,32 @@ void ConvoWin::closeTab(Gtk::VBox *notebook_vbox) {
 	Gtk::Label *label_id = dynamic_cast<Gtk::Label*>(wi->get_widget());
 	Gtk::Label *label_nick = dynamic_cast<Gtk::Label*>((++wi)->get_widget());
 	Gtk::Label *label = dynamic_cast<Gtk::Label*>((++wi)->get_widget());
-	Gtk::ScrolledWindow *scrolled_win = dynamic_cast<Gtk::ScrolledWindow*>((++wi)->get_widget());
+	Gtk::VPaned *vpaned = dynamic_cast<Gtk::VPaned*>((++wi)->get_widget());
+	Gtk::ScrolledWindow *scrolled_win = dynamic_cast<Gtk::ScrolledWindow*>(vpaned->get_child1());
 	Gtk::TextView *text_view = dynamic_cast<Gtk::TextView*>(*(scrolled_win->get_children().begin()));
-	Gtk::HBox *entry_hbox = dynamic_cast<Gtk::HBox*>((++wi)->get_widget());
-	Gtk::ScrolledWindow *scrolled_win2 = dynamic_cast<Gtk::ScrolledWindow*>((entry_hbox->children().begin())->get_widget());
-	Gtk::Button *send_btn = dynamic_cast<Gtk::Button*>((++(entry_hbox->children().begin()))->get_widget());
+	Gtk::VBox *entry_vbox = dynamic_cast<Gtk::VBox*>(vpaned->get_child2());
+	Gtk::Box_Helpers::BoxList::iterator wi2 = entry_vbox->children().begin();
+	Gtk::HBox *buttons_hbox = dynamic_cast<Gtk::HBox*>(wi2->get_widget());
+	Gtk::HBox *entry_hbox = dynamic_cast<Gtk::HBox*>((++wi2)->get_widget());
+	Gtk::Box_Helpers::BoxList::iterator wi3 = entry_hbox->children().begin();
+	Gtk::ScrolledWindow *scrolled_win2 = 
+			dynamic_cast<Gtk::ScrolledWindow*>(wi3->get_widget());
 	Gtk::TextView *text_view_input = dynamic_cast<Gtk::TextView*>(*(scrolled_win2->get_children().begin()));
-		
+	Gtk::Button *send_btn = dynamic_cast<Gtk::Button*>((++wi3)->get_widget());
+			
 	delete text_view_input;
 	delete send_btn;
 	delete scrolled_win2;
 	delete entry_hbox;
+	delete buttons_hbox;
+	delete entry_vbox;
 	delete text_view;
 	delete scrolled_win;
+	delete vpaned;
 	delete label;
 	delete label_nick;
 	delete label_id;
 	delete notebook_vbox;
 	
 }
+

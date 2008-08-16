@@ -1,7 +1,9 @@
 #include <vector>
 #include "PreferencesWin.h"
 #include "../Application.h"
+#include "ConvoWin.h"
 #include "../CommonFunctions.h"
+#include "../backend/GtkHelperFunctions.h"
 
 PreferencesWin::PreferencesWin(Glib::RefPtr<Gnome::Glade::Xml> refXml, Application *app) : preferenceswin_(0),
 			        app_ptr_(app) {
@@ -24,6 +26,12 @@ PreferencesWin::PreferencesWin(Glib::RefPtr<Gnome::Glade::Xml> refXml, Applicati
 	refXml->get_widget("PCancelBtn", pcancelbtn_);
 	if (!pcancelbtn_)
 		throw std::runtime_error("Couldn't find PCancelBtn");
+	refXml->get_widget("PFontBtn", pfontbtn_);
+	if (!pfontbtn_)
+		throw std::runtime_error("Couldn't find PFontBtn");
+	refXml->get_widget("PColorBtn", pcolorbtn_);
+	if (!pcolorbtn_)
+		throw std::runtime_error("Couldn't find PColorBtn");
 	refXml->get_widget("PNicknameEntry", pnicknameentry_);
 	if (!pnicknameentry_)
 		throw std::runtime_error("Couldn't find PNicknameEntry");
@@ -82,6 +90,8 @@ PreferencesWin::PreferencesWin(Glib::RefPtr<Gnome::Glade::Xml> refXml, Applicati
 // 					     sigc::mem_fun(*this, &PreferencesWin::onUserDirectoryEntryChanged));
 // 	ploggingdirectoryentry_->signal_changed().connect(
 // 			sigc::mem_fun(*this, &PreferencesWin::onLoggingDirectoryEntryChanged));
+	pfontbtn_->signal_font_set().connect(sigc::mem_fun(*this, &PreferencesWin::onFontBtnFontSet));
+	pcolorbtn_->signal_color_set().connect(sigc::mem_fun(*this, &PreferencesWin::onColorBtnColorSet));
 	plogallcb_->signal_toggled().connect(sigc::mem_fun(*this, &PreferencesWin::onLogAllCBToggled));
 	ploggingcb_->signal_toggled().connect(sigc::mem_fun(*this, &PreferencesWin::onLoggingCBToggled));
 	plogmaincb_->signal_toggled().connect(sigc::mem_fun(*this, &PreferencesWin::onLogMainCBToggled));
@@ -117,6 +127,9 @@ void PreferencesWin::setOptionsFromConfig() {
 	pnicknameentry_->set_text(app_ptr_->getConfig()->getConfigOptions()->getNickname());
 	puserdirectoryentry_->set_text(app_ptr_->getConfig()->getConfigOptions()->getLogsDirectory());
 	ploggingdirectoryentry_->set_text(app_ptr_->getConfig()->getConfigOptions()->getUserDirectory());
+	pfontbtn_->set_font_name(app_ptr_->getConfig()->getConfigOptions()->getFont());
+	Gdk::Color color(app_ptr_->getConfig()->getConfigOptions()->getColor());
+	pcolorbtn_->set_color(color);
 	ploggingcb_->set_active(intify(app_ptr_->getConfig()->getConfigOptions()->getLogging()));
 	plogallcb_->set_active(intify(app_ptr_->getConfig()->getConfigOptions()->getLogAll()));
 	plogmaincb_->set_active(intify(app_ptr_->getConfig()->getConfigOptions()->getLogMain()));
@@ -139,6 +152,8 @@ void PreferencesWin::onPOKBtnClicked() {
 	onUserDirectoryEntryChanged();
 	onLoggingDirectoryEntryChanged();
 	app_ptr_->getConfig()->getConfigOptions()->syncConfigFromConfigOptions();
+	if (app_ptr_->getConvoWin())
+		app_ptr_->getConvoWin()->updateTextViewInputStyle();
 	preferenceswin_->hide();
 }
 
@@ -147,6 +162,8 @@ void PreferencesWin::onPApplyBtnClicked() {
 	onUserDirectoryEntryChanged();
 	onLoggingDirectoryEntryChanged();
 	app_ptr_->getConfig()->getConfigOptions()->syncConfigFromConfigOptions();
+	if (app_ptr_->getConvoWin())
+		app_ptr_->getConvoWin()->updateTextViewInputStyle();
 }
 
 void PreferencesWin::onPCancelBtnClicked() {
@@ -164,6 +181,14 @@ void PreferencesWin::onUserDirectoryEntryChanged() {
 
 void PreferencesWin::onLoggingDirectoryEntryChanged() {
 	app_ptr_->getConfig()->getConfigOptions()->setLogsDirectory(ploggingdirectoryentry_->get_text(), 0);
+}
+
+void PreferencesWin::onFontBtnFontSet() {
+	app_ptr_->getConfig()->getConfigOptions()->setFont(pfontbtn_->get_font_name(), 0);
+}
+
+void PreferencesWin::onColorBtnColorSet() {
+	app_ptr_->getConfig()->getConfigOptions()->setColor(gdkColorToString(pcolorbtn_->get_color()), 0);
 }
 
 void PreferencesWin::onLoggingCBToggled() {
