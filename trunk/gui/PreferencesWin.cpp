@@ -26,6 +26,9 @@ PreferencesWin::PreferencesWin(Glib::RefPtr<Gnome::Glade::Xml> refXml, Applicati
 	refXml->get_widget("PCancelBtn", pcancelbtn_);
 	if (!pcancelbtn_)
 		throw std::runtime_error("Couldn't find PCancelBtn");
+	refXml->get_widget("PEnableStyleCB", penablestylecb_);
+	if (!penablestylecb_)
+		throw std::runtime_error("Couldn't find PEnableStyleCB");
 	refXml->get_widget("PFontBtn", pfontbtn_);
 	if (!pfontbtn_)
 		throw std::runtime_error("Couldn't find PFontBtn");
@@ -90,6 +93,7 @@ PreferencesWin::PreferencesWin(Glib::RefPtr<Gnome::Glade::Xml> refXml, Applicati
 // 					     sigc::mem_fun(*this, &PreferencesWin::onUserDirectoryEntryChanged));
 // 	ploggingdirectoryentry_->signal_changed().connect(
 // 			sigc::mem_fun(*this, &PreferencesWin::onLoggingDirectoryEntryChanged));
+	penablestylecb_->signal_toggled().connect(sigc::mem_fun(*this, &PreferencesWin::onEnableStyleCBToggled));
 	pfontbtn_->signal_font_set().connect(sigc::mem_fun(*this, &PreferencesWin::onFontBtnFontSet));
 	pcolorbtn_->signal_color_set().connect(sigc::mem_fun(*this, &PreferencesWin::onColorBtnColorSet));
 	plogallcb_->signal_toggled().connect(sigc::mem_fun(*this, &PreferencesWin::onLogAllCBToggled));
@@ -127,6 +131,7 @@ void PreferencesWin::setOptionsFromConfig() {
 	pnicknameentry_->set_text(app_ptr_->getConfig()->getConfigOptions()->getNickname());
 	puserdirectoryentry_->set_text(app_ptr_->getConfig()->getConfigOptions()->getLogsDirectory());
 	ploggingdirectoryentry_->set_text(app_ptr_->getConfig()->getConfigOptions()->getUserDirectory());
+	penablestylecb_->set_active(intify(app_ptr_->getConfig()->getConfigOptions()->getEnableStyle()));
 	pfontbtn_->set_font_name(app_ptr_->getConfig()->getConfigOptions()->getFont());
 	Gdk::Color color(app_ptr_->getConfig()->getConfigOptions()->getColor());
 	pcolorbtn_->set_color(color);
@@ -181,6 +186,12 @@ void PreferencesWin::onUserDirectoryEntryChanged() {
 
 void PreferencesWin::onLoggingDirectoryEntryChanged() {
 	app_ptr_->getConfig()->getConfigOptions()->setLogsDirectory(ploggingdirectoryentry_->get_text(), 0);
+}
+
+void PreferencesWin::onEnableStyleCBToggled() {
+	app_ptr_->getConfig()->getConfigOptions()->setEnableStyle(stringify(penablestylecb_->get_active()), 0);
+	pfontbtn_->set_sensitive(penablestylecb_->get_active());
+	pcolorbtn_->set_sensitive(penablestylecb_->get_active());
 }
 
 void PreferencesWin::onFontBtnFontSet() {

@@ -236,7 +236,8 @@ Gtk::Notebook_Helpers::PageIterator ConvoWin::appendPage(Gtk::TreeModel::iterato
 }
 
 void ConvoWin::onTextBufferInputChanged(Glib::RefPtr<Gtk::TextBuffer> buffer) {
-	buffer->apply_tag_by_name("inputtag", buffer->begin(), buffer->end());
+	if (app_ptr_->getConfig()->getConfigOptions()->getEnableStyle() == "1")
+		buffer->apply_tag_by_name("inputtag", buffer->begin(), buffer->end());
 }
 
 Gtk::TextView *ConvoWin::getTextViewInput(Gtk::VBox *vbox) {
@@ -314,9 +315,11 @@ void ConvoWin::onSendButtonPressed(Gtk::VBox *vbox, Gtk::TreeModel::iterator &it
 				regexp = Glib::Regex::create(">");
 				text = regexp->replace(text, 0, "&gt;", static_cast<Glib::RegexMatchFlags>(0));
 			}
-			Glib::ustring span_tmp("<span font_desc='" + app_ptr_->getConfig()->getConfigOptions()->getFont() + "'><span foreground='" + app_ptr_->getConfig()->getConfigOptions()->getColor() + "'>");
-			text.insert(0, span_tmp);
-			text.append("</span></span>");
+			if (app_ptr_->getConfig()->getConfigOptions()->getEnableStyle() == "1") {
+				Glib::ustring span_tmp("<span font_desc='" + app_ptr_->getConfig()->getConfigOptions()->getFont() + "'><span foreground='" + app_ptr_->getConfig()->getConfigOptions()->getColor() + "'>");
+				text.insert(0, span_tmp);
+				text.append("</span></span>");
+			}
 			if (client_->sendMessage(buddy_entry->username, text) == true) {
 				Glib::ustring nickname = app_ptr_->getConfig()->getConfigOptions()->getNickname();
 				if (nickname == "")
@@ -434,20 +437,27 @@ void ConvoWin::updateTextViewInputStyle() {
 	
 	Gtk::VBox *vbox;
 	Gtk::TextView *text_view_input;
-	
+		
 	for(int i = 0; i != convonotebook_->get_n_pages(); i++) {
 		vbox = (Gtk::VBox *) (convonotebook_->get_nth_page(i));
 		text_view_input = getTextViewInput(vbox);
 		Glib::RefPtr<Gtk::TextBuffer::Tag> refTagMatch =
 				text_view_input->get_buffer()->get_tag_table()->lookup("inputtag");
-		refTagMatch->property_font() = app_ptr_->getConfig()->getConfigOptions()->getFont();
-		refTagMatch->property_foreground() = app_ptr_->getConfig()->getConfigOptions()->getColor();
-		text_view_input->get_buffer()->apply_tag_by_name("inputtag", text_view_input->get_buffer()->begin(),
-					    text_view_input->get_buffer()->end());
+		if (app_ptr_->getConfig()->getConfigOptions()->getEnableStyle() == "1") {
+			refTagMatch->property_font() = app_ptr_->getConfig()->getConfigOptions()->getFont();
+			refTagMatch->property_foreground() = app_ptr_->getConfig()->getConfigOptions()->getColor();
 		
-		
+		}
+		else {
+			refTagMatch->property_font() = "";
+			refTagMatch->property_foreground() = "black";
+		}
+		text_view_input->get_buffer()->apply_tag_by_name("inputtag", 
+					    text_view_input->get_buffer()->begin(),
+							    text_view_input->get_buffer()->end());
+			
 	}
-	
+
 }
 
 void ConvoWin::onVScrollValueChange(Gtk::ScrolledWindow *scrolled_win) {
