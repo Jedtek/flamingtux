@@ -71,6 +71,7 @@ BuddyListWin::BuddyListWin(Glib::RefPtr<Gnome::Glade::Xml> refXml, Application *
 	
 	// create a new preferences window
 	preferenceswin_ = new PreferencesWin(refXml, app_ptr_);
+	preferenceswin_->setOptionsFromConfig();
 	
 	// connect required signals
 	statusentry_->signal_key_release_event().connect_notify(sigc::mem_fun(*this, &BuddyListWin::onStatusEntryKeyRelease));
@@ -387,16 +388,8 @@ void BuddyListWin::addBuddyToTree(int id, Glib::ustring username, Glib::ustring 
 			childrow[m_Columns.m_col_nickname] = "[" + username + "]";
 		}
 		else {
-			Glib::ustring markup_text("<span color='Dark Green'>" + nickname + "</span>");
 			Glib::ustring nickname_tmp(nickname);
-			if(!pango_parse_markup(markup_text.c_str(), -1, 0, NULL, NULL, NULL, NULL)) {
-				Glib::RefPtr<Glib::Regex> regexp = Glib::Regex::create("&");
-				nickname_tmp = regexp->replace(nickname, 0, "&amp;", static_cast<Glib::RegexMatchFlags>(0));
-				regexp = Glib::Regex::create("<");
-				nickname_tmp = regexp->replace(nickname_tmp, 0, "&lt;", static_cast<Glib::RegexMatchFlags>(0));
-				regexp = Glib::Regex::create(">");
-				nickname_tmp = regexp->replace(nickname_tmp, 0, "&gt;", static_cast<Glib::RegexMatchFlags>(0));
-			}
+			nickname_tmp = parseMarkup(nickname_tmp);
 			childrow[m_Columns.m_col_nickname_rendered] = "<span color='Dark Green'>" + nickname_tmp + "</span>";
 			childrow[m_Columns.m_col_nickname] = nickname;
 		}
@@ -414,16 +407,8 @@ void BuddyListWin::addBuddyToTree(int id, Glib::ustring username, Glib::ustring 
 			childrow[m_Columns.m_col_nickname] = "[" + username + "]";
 		}
 		else {
-			Glib::ustring markup_text("<span color='Dark Green'>" + nickname + "</span>");
 			Glib::ustring nickname_tmp(nickname);
-			if(!pango_parse_markup(markup_text.c_str(), -1, 0, NULL, NULL, NULL, NULL)) {
-				Glib::RefPtr<Glib::Regex> regexp = Glib::Regex::create("&");
-				nickname_tmp = regexp->replace(nickname, 0, "&amp;", static_cast<Glib::RegexMatchFlags>(0));
-				regexp = Glib::Regex::create("<");
-				nickname_tmp = regexp->replace(nickname_tmp, 0, "&lt;", static_cast<Glib::RegexMatchFlags>(0));
-				regexp = Glib::Regex::create(">");
-				nickname_tmp = regexp->replace(nickname_tmp, 0, "&gt;", static_cast<Glib::RegexMatchFlags>(0));
-			}
+			nickname_tmp = parseMarkup(nickname_tmp);
 			childrow[m_Columns.m_col_nickname_rendered] = "<span color='Dark Blue'>" + nickname_tmp + "</span>";
 			childrow[m_Columns.m_col_nickname] = nickname;
 		}

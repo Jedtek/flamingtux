@@ -14,9 +14,11 @@ class PreferencesWin {
 		~PreferencesWin();
 		void hide() { preferenceswin_->hide(); }
 		void show() { setOptionsFromConfig(); preferenceswin_->show(); }
+		void signalFontBtnClicked() { pfontbtn_->clicked(); }
+		void signalColorBtnClicked() { pfontbtn_->clicked(); }
+		void setOptionsFromConfig();
 	private:
 		bool onDeleteEvent(GdkEventAny *e);
-		void setOptionsFromConfig();
 		void onPOKBtnClicked();
 		void onPCancelBtnClicked();
 		void onPApplyBtnClicked();
@@ -50,6 +52,7 @@ class PreferencesWin {
 		Gtk::Entry *pnicknameentry_;
 		Gtk::Entry *puserdirectoryentry_;
 		Gtk::Entry *ploggingdirectoryentry_;
+		Gtk::CheckButton *penablestylecb_;
 		Gtk::FontButton *pfontbtn_;
 		Gtk::ColorButton *pcolorbtn_;
 		Gtk::CheckButton *ploggingcb_;

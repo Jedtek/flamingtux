@@ -24,9 +24,10 @@ class ConvoWin : public Gtk::Window {
 		Gtk::Notebook_Helpers::PageIterator appendPage(Gtk::TreeModel::iterator &iter);
 		void gotMessage(Gtk::TreeIter &iter, Glib::ustring message);
 		void updatePage(Gtk::TreeModel::Row childrow);
-		void updateTextViewInputFontAndColor();
+		void updateTextViewInputStyle();
 	private:
 		//Glib::ustring offline_msg = "The user is currently offline";
+		void updateTextViewInputStyle(Glib::RefPtr<Gtk::TextBuffer> buffer, Gtk::ToggleButton *apply_btn);
 		void onCloseMenuItem();
 		void updateStatusTextView(Gtk::TextView *text_view, Glib::ustring nickname, int status);
 		void closeTab(Gtk::VBox *notebook_vbox);
@@ -39,12 +40,21 @@ class ConvoWin : public Gtk::Window {
 		void onSendButtonPressed(Gtk::VBox *vbox, Gtk::TreeModel::iterator &iter);
 		void updateTextView(Gtk::TextView *text_view, Glib::ustring nickname, Glib::ustring text);
 		void onVScrollValueChange(Gtk::ScrolledWindow *scrolled_win);
-		void onTextBufferInputChanged(Glib::RefPtr<Gtk::TextBuffer> buffer);
+		void onTextBufferInputChanged(Glib::RefPtr<Gtk::TextBuffer> buffer, Gtk::ToggleButton *apply_btn);
+		void onFontBtnClicked();
+		void onColorBtnClicked();
+		void onForeachButtonsHBox(Gtk::Widget &widget, int sensitive);
+		void onApplyBtnToggled(Gtk::TextView *text_view_input,
+				       Gtk::HBox *buttons_hbox, Gtk::ToggleButton *apply_btn, 
+	   Gtk::ToggleButton *underline_btn, Gtk::ToggleButton *strikethrough_btn);
+		void onUnderlineBtnClicked(Gtk::TextView *text_view_input, Gtk::ToggleButton *underline_btn);
+		void onStrikethroughBtnClicked(Gtk::TextView *text_view_input, Gtk::ToggleButton *strikethrough_btn);
 		Gtk::TextView *getTextViewInput(Gtk::VBox *vbox);
 		Gtk::TextView *getTextView(Gtk::VBox *vbox);
 		Gtk::Label *getLabelId(Gtk::VBox *vbox);
 		Gtk::Label *getLabelNick(Gtk::VBox *vbox);
 		Gtk::Label *getLabel(Gtk::VBox *vbox);
+		Gtk::ToggleButton *getApplyBtn(Gtk::VBox *vbox);
 		
 		Gtk::Window *convowin_;
 		Glib::RefPtr<Gnome::Glade::Xml> refXml_;

@@ -305,6 +305,7 @@ In-Game</property>
   <widget class="GtkWindow" id="ConvoWin">
     <property name="width_request">500</property>
     <property name="height_request">450</property>
+    <property name="border_width">5</property>
     <property name="icon">flamingtux_icon.png</property>
     <child>
       <widget class="GtkVBox" id="ConvoWinVBox">
@@ -620,7 +621,7 @@ In-Game</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="has_tooltip">True</property>
-                                <property name="tooltip_text">Disable if conversing with official windows Xfire client, since it lacks support for styles.</property>
+                                <property name="tooltip_text">Disable if conversing with only official windows Xfire client, since it lacks support for styles.</property>
                                 <property name="label" translatable="yes">Enable</property>
                                 <property name="response_id">0</property>
                                 <property name="draw_indicator">True</property>
