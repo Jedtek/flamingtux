@@ -6,6 +6,7 @@
 #include <stdexcept>
 #include <string>
 #include <sstream>
+#include <pangomm.h>
 
 #include "CommonFunctions.h"
 
@@ -31,3 +32,19 @@ int intify(std::string x) {
 		throw BadConversion("intify(string)");
 	return a;
 }
+
+Glib::ustring parseMarkup(Glib::ustring markup) {
+	if(!pango_parse_markup(markup.c_str(), -1, 0, NULL, NULL, NULL, NULL)) {
+		Glib::RefPtr<Glib::Regex> regexp = Glib::Regex::create("&");
+		markup = regexp->replace(markup, 0, "&amp;", 
+				       static_cast<Glib::RegexMatchFlags>(0));
+		regexp = Glib::Regex::create("<");
+		markup = regexp->replace(markup, 0, "&lt;", 
+				       static_cast<Glib::RegexMatchFlags>(0));
+		regexp = Glib::Regex::create(">");
+		markup = regexp->replace(markup, 0, "&gt;", 
+				       static_cast<Glib::RegexMatchFlags>(0));
+	}
+	return markup;
+}
+

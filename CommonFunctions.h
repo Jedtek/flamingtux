@@ -5,8 +5,11 @@
 #ifndef __COMMONFUNCTIONS__H
 #define __COMMONFUNCTIONS__H
 
+#include <glibmm.h>
+
 std::string stringify(int x);
 int intify(std::string x);
+Glib::ustring parseMarkup(Glib::ustring markup);
 
 #endif
 

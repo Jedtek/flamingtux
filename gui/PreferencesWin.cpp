@@ -132,6 +132,8 @@ void PreferencesWin::setOptionsFromConfig() {
 	puserdirectoryentry_->set_text(app_ptr_->getConfig()->getConfigOptions()->getLogsDirectory());
 	ploggingdirectoryentry_->set_text(app_ptr_->getConfig()->getConfigOptions()->getUserDirectory());
 	penablestylecb_->set_active(intify(app_ptr_->getConfig()->getConfigOptions()->getEnableStyle()));
+	pfontbtn_->set_sensitive(penablestylecb_->get_active());
+	pcolorbtn_->set_sensitive(penablestylecb_->get_active());
 	pfontbtn_->set_font_name(app_ptr_->getConfig()->getConfigOptions()->getFont());
 	Gdk::Color color(app_ptr_->getConfig()->getConfigOptions()->getColor());
 	pcolorbtn_->set_color(color);
@@ -157,8 +159,6 @@ void PreferencesWin::onPOKBtnClicked() {
 	onUserDirectoryEntryChanged();
 	onLoggingDirectoryEntryChanged();
 	app_ptr_->getConfig()->getConfigOptions()->syncConfigFromConfigOptions();
-	if (app_ptr_->getConvoWin())
-		app_ptr_->getConvoWin()->updateTextViewInputStyle();
 	preferenceswin_->hide();
 }
 
@@ -167,12 +167,12 @@ void PreferencesWin::onPApplyBtnClicked() {
 	onUserDirectoryEntryChanged();
 	onLoggingDirectoryEntryChanged();
 	app_ptr_->getConfig()->getConfigOptions()->syncConfigFromConfigOptions();
-	if (app_ptr_->getConvoWin())
-		app_ptr_->getConvoWin()->updateTextViewInputStyle();
 }
 
 void PreferencesWin::onPCancelBtnClicked() {
 	app_ptr_->getConfig()->getConfigOptions()->syncConfigOptionsFromConfig();
+	if (app_ptr_->getConvoWin())
+		app_ptr_->getConvoWin()->updateTextViewInputStyle();
 	preferenceswin_->hide();
 }
 
@@ -192,14 +192,20 @@ void PreferencesWin::onEnableStyleCBToggled() {
 	app_ptr_->getConfig()->getConfigOptions()->setEnableStyle(stringify(penablestylecb_->get_active()), 0);
 	pfontbtn_->set_sensitive(penablestylecb_->get_active());
 	pcolorbtn_->set_sensitive(penablestylecb_->get_active());
+	if (app_ptr_->getConvoWin())
+		app_ptr_->getConvoWin()->updateTextViewInputStyle();
 }
 
 void PreferencesWin::onFontBtnFontSet() {
 	app_ptr_->getConfig()->getConfigOptions()->setFont(pfontbtn_->get_font_name(), 0);
+	if (app_ptr_->getConvoWin())
+		app_ptr_->getConvoWin()->updateTextViewInputStyle();
 }
 
 void PreferencesWin::onColorBtnColorSet() {
 	app_ptr_->getConfig()->getConfigOptions()->setColor(gdkColorToString(pcolorbtn_->get_color()), 0);
+	if (app_ptr_->getConvoWin())
+		app_ptr_->getConvoWin()->updateTextViewInputStyle();
 }
 
 void PreferencesWin::onLoggingCBToggled() {

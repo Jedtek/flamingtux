@@ -14,9 +14,11 @@ class PreferencesWin {
 		~PreferencesWin();
 		void hide() { preferenceswin_->hide(); }
 		void show() { setOptionsFromConfig(); preferenceswin_->show(); }
+		void signalFontBtnClicked() { pfontbtn_->clicked(); }
+		void signalColorBtnClicked() { pcolorbtn_->clicked(); }
+		void setOptionsFromConfig();
 	private:
 		bool onDeleteEvent(GdkEventAny *e);
-		void setOptionsFromConfig();
 		void onPOKBtnClicked();
 		void onPCancelBtnClicked();
 		void onPApplyBtnClicked();

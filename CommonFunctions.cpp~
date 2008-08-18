@@ -1,7 +1,7 @@
 /* FlamingTux 
  * Authors: peacey, jeed890 
  * http://flamingtux.googlecode.com 
- * This code is GPL, licensing soon though ;) */
+ *  This code is protected by GPLv3, please see LICENSE file for more information */
 #include <iostream>
 #include <stdexcept>
 #include <string>
@@ -31,3 +31,19 @@ int intify(std::string x) {
 		throw BadConversion("intify(string)");
 	return a;
 }
+
+Glib::ustring parseMarkup(Glib::ustring markup) {
+	if(!pango_parse_markup(markup.c_str(), -1, 0, NULL, NULL, NULL, NULL)) {
+		Glib::RefPtr<Glib::Regex> regexp = Glib::Regex::create("&");
+		markup = regexp->replace(markup, 0, "&amp;", 
+				       static_cast<Glib::RegexMatchFlags>(0));
+		regexp = Glib::Regex::create("<");
+		markup = regexp->replace(markup, 0, "&lt;", 
+				       static_cast<Glib::RegexMatchFlags>(0));
+		regexp = Glib::Regex::create(">");
+		markup = regexp->replace(markup, 0, "&gt;", 
+				       static_cast<Glib::RegexMatchFlags>(0));
+	}
+	return markup;
+}
+
