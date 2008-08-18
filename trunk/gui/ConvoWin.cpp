@@ -181,9 +181,9 @@ Gtk::Notebook_Helpers::PageIterator ConvoWin::appendPage(Gtk::TreeModel::iterato
 				   Gdk::CONTROL_MASK, Gtk::ACCEL_VISIBLE);
 	page_hbox->pack_start(*page_button, Gtk::PACK_SHRINK);
 	
-	scrolled_win->set_policy(Gtk::POLICY_NEVER, Gtk::POLICY_ALWAYS);
+	scrolled_win->set_policy(Gtk::POLICY_NEVER, Gtk::POLICY_AUTOMATIC);
 	scrolled_win->add(*text_view);
-	scrolled_win2->set_policy(Gtk::POLICY_NEVER, Gtk::POLICY_ALWAYS);
+	scrolled_win2->set_policy(Gtk::POLICY_NEVER, Gtk::POLICY_AUTOMATIC);
 	scrolled_win2->add(*text_view2);
 	text_view->set_wrap_mode(Gtk::WRAP_WORD_CHAR);
 	text_view2->set_wrap_mode(Gtk::WRAP_WORD_CHAR);

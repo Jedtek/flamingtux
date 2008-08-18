@@ -48,7 +48,6 @@ ConvoWin::ConvoWin(Glib::RefPtr<Gnome::Glade::Xml> refXml, Application *app, Fir
 	convonotebook_->signal_page_removed().connect_notify(sigc::mem_fun(*this, &ConvoWin::onPageRemoved));
 	convonotebook_->signal_switch_page().connect_notify(sigc::mem_fun(*this, &ConvoWin::onPageSwitched));
 	convonotebook_->set_scrollable(true);
-	convowin_->set_border_width(5);
 }
 
 ConvoWin::~ConvoWin() {
