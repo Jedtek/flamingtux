@@ -34,6 +34,7 @@ class BuddyListWin : public Gtk::Window {
 		Gtk::TreeIter &get_iter_at_username(Glib::ustring username);
 		void changeNick(Glib::ustring nick);
 		PreferencesWin *getPreferencesWin() { return preferenceswin_; }
+		Glib::RefPtr<Gtk::StatusIcon> getSystray() { return systray_; }
 	private:
 		void onInviteBtnClicked();
 		void onInviteMenuItemActivate();
@@ -72,7 +73,11 @@ class BuddyListWin : public Gtk::Window {
 		
 		Application *app_ptr_;
 		FireClient *client_;
-		
+
+		Glib::RefPtr<Gtk::StatusIcon> systray_; /* oh so sexy */
+		int is_totray;
+
+
 		Gtk::Menu m_Menu_Popup;
 		virtual void onPopupMenuButtonPressed(GdkEventButton *event);
 		virtual void onPopupMenuSendMessageClicked();
@@ -81,6 +86,7 @@ class BuddyListWin : public Gtk::Window {
 		void on_event_finish();
 		void createTreeModel();
 		void onMessageReceived();
+		void onSysTrayActivate();
 		void on_treeview_clicked(GdkEventButton *event);
 		void on_treeview_keyed(GdkEventKey *event);
 		void onStatusEntryKeyRelease(GdkEventKey *event);

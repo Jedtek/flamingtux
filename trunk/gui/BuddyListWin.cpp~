@@ -13,7 +13,7 @@
 #include "PreferencesWin.h"
 #include <libglademm/xml.h>
 #include <gtkmm.h>
-
+#define STATUS_ICON_LOCATION "gui/glade/flamingtux_icon.png"
 using namespace std;
 using namespace xfirelib;
 using namespace xfireclient;
@@ -107,6 +107,11 @@ BuddyListWin::BuddyListWin(Glib::RefPtr<Gnome::Glade::Xml> refXml, Application *
 	eventThread_->signal_finished().connect(sigc::mem_fun(*this, &BuddyListWin::on_event_finish));
 	// now we need to change the event thread for the client so it starts signalling with this one
 	client_->setEventThread(eventThread_);
+	/* create systray icon */
+  	systray_ = Gtk::StatusIcon::create_from_file(STATUS_ICON_LOCATION);
+  	systray_->set_tooltip("Click to hide Flamingtux");
+	is_totray = 0;
+	systray_->signal_activate().connect(sigc::mem_fun(*this, &BuddyListWin::onSysTrayActivate));
 	/* set this for use elsewhere in this file */
 	refXml_ = refXml;
 }
@@ -389,7 +394,7 @@ void BuddyListWin::addBuddyToTree(int id, Glib::ustring username, Glib::ustring 
 		}
 		else {
 			Glib::ustring nickname_tmp(nickname);
-			parseMarkup(nickname_tmp);
+			nickname_tmp = parseMarkup(nickname_tmp);
 			childrow[m_Columns.m_col_nickname_rendered] = "<span color='Dark Green'>" + nickname_tmp + "</span>";
 			childrow[m_Columns.m_col_nickname] = nickname;
 		}
@@ -408,7 +413,7 @@ void BuddyListWin::addBuddyToTree(int id, Glib::ustring username, Glib::ustring 
 		}
 		else {
 			Glib::ustring nickname_tmp(nickname);
-			parseMarkup(nickname_tmp);
+			nickname_tmp = parseMarkup(nickname_tmp);
 			childrow[m_Columns.m_col_nickname_rendered] = "<span color='Dark Blue'>" + nickname_tmp + "</span>";
 			childrow[m_Columns.m_col_nickname] = nickname;
 		}
