@@ -164,6 +164,22 @@ int ConfigOptions::setLogNickChange(Glib::ustring lnc, int save) {
 	else return 1;
 }
 
+int ConfigOptions::setSpellChecking(Glib::ustring sc, int save) {
+	sc_ = sc;
+	Glib::ustring tmp("SC");
+	if (save)
+		return config_->setOption(tmp, sc_, 1);
+	else return 1;
+}
+
+int ConfigOptions::setSpellingDictionary(Glib::ustring sd, int save) {
+	sd_ = sd;
+	Glib::ustring tmp("SD");
+	if (save)
+		return config_->setOption(tmp, sd_, 1);
+	else return 1;
+}
+
 int ConfigOptions::setAllToDefaults() {
 	setNickname("");
 	string tmp = Glib::get_home_dir() + "/.flamingtux/";
@@ -185,6 +201,8 @@ int ConfigOptions::setAllToDefaults() {
 	setLogInviteSend("1");
 	setLogInviteReceive("1");
 	setLogNickChange("1");
+	setSpellChecking("1");
+	setSpellingDictionary("en");
 	
 }
 
@@ -208,6 +226,8 @@ void ConfigOptions::syncConfigFromConfigOptions() {
 	setLogInviteSend(getLogInviteSend());
 	setLogInviteReceive(getLogInviteReceive());
 	setLogNickChange(getLogNickChange());
+	setSpellChecking(getSpellChecking());
+	setSpellingDictionary(getSpellingDictionary());
 }
 
 void ConfigOptions::syncConfigOptionsFromConfig() {
@@ -249,5 +269,9 @@ void ConfigOptions::syncConfigOptionsFromConfig() {
 	setLogInviteReceive(config_->getOption(tmp), 0);
 	tmp = "LNC";
 	setLogNickChange(config_->getOption(tmp), 0);
+	tmp = "SC";
+	setSpellChecking(config_->getOption(tmp), 0);
+	tmp = "SD";
+	setSpellingDictionary(config_->getOption(tmp), 0);
 }
 

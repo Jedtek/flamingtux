@@ -24,7 +24,7 @@ using namespace xfirelib;
 using namespace xfireclient;
 
 ConvoWin::ConvoWin(Glib::RefPtr<Gnome::Glade::Xml> refXml, Application *app, FireClient *client)
-	: convowin_(0), windowMinimized(0), windowAbove(0) {
+	: convowin_(0), windowMinimized(0), windowAbove(0), convonotebook_(0) {
 	app_ptr_ = app;
 	client_ = client;
 	refXml_ = refXml;
@@ -157,6 +157,8 @@ Gtk::Notebook_Helpers::PageIterator ConvoWin::appendPage(Gtk::TreeModel::iterato
 	Gtk::TextView *text_view = new Gtk::TextView();
 	text_view->set_editable(false);
 	Gtk::TextView *text_view2 = new Gtk::TextView();
+	attachGtkSpellToTextView(text_view2);
+	
 	Glib::RefPtr<Gtk::TextBuffer::Tag> refTagMatch = text_view2->get_buffer()->create_tag("inputtag");
 	refTagMatch->property_font() = app_ptr_->getConfig()->getConfigOptions()->getFont();
 	refTagMatch->property_foreground() = app_ptr_->getConfig()->getConfigOptions()->getColor();
@@ -301,6 +303,27 @@ Gtk::Notebook_Helpers::PageIterator ConvoWin::appendPage(Gtk::TreeModel::iterato
 	refTagMatch->property_strikethrough_set() = 0;
 				 
 	return i;
+}
+
+void ConvoWin::attachGtkSpellToTextView(Gtk::TextView *view) {
+	if (app_ptr_->getConfig()->getConfigOptions()->getSpellChecking() == "1") {
+		GError *error = NULL;
+		if (gtkspell_new_attach(view->gobj(), app_ptr_->getConfig()->getConfigOptions()->getSpellingDictionary().c_str(), &error) == NULL) {
+			g_print("gtkspell error: %s\n", error->message);
+			g_error_free(error);
+		}
+	}
+}
+
+void ConvoWin::setGtkSpellDictionary(GtkSpell *spell, Glib::ustring lang) {
+	if (app_ptr_->getConfig()->getConfigOptions()->getSpellChecking() == "1") {
+		GError *error = NULL;
+		if (!gtkspell_set_language(spell, 
+		    app_ptr_->getConfig()->getConfigOptions()->getSpellingDictionary().c_str(), &error)) {
+			g_print("gtkspell error: %s\n", error->message);
+			g_error_free(error);
+		}
+	}
 }
 
 void ConvoWin::onUnderlineBtnClicked(Gtk::TextView *text_view_input, Gtk::ToggleButton *underline_btn) {
@@ -610,6 +633,43 @@ void ConvoWin::updateTextViewInputStyle(Glib::RefPtr<Gtk::TextBuffer> buffer, Gt
 
 }
 
+void ConvoWin::updateTextViewInputGtkSpell(int detach) {
+	
+	Gtk::VBox *vbox;
+	Gtk::TextView *text_view_input;
+	GtkSpell *obj;
+	
+	for(int i = 0; i != convonotebook_->get_n_pages(); i++) {
+		vbox = (Gtk::VBox *) (convonotebook_->get_nth_page(i));
+		text_view_input = getTextViewInput(vbox);
+		obj = gtkspell_get_from_text_view(text_view_input->gobj());
+		
+		if (detach && obj)
+			gtkspell_detach(obj);
+		else if (!detach)
+			if (obj)
+				gtkspell_detach(obj);
+			attachGtkSpellToTextView(text_view_input);
+	}
+}
+
+void ConvoWin::updateTextViewInputGtkSpellDictionary() {
+	
+	Gtk::VBox *vbox;
+	Gtk::TextView *text_view_input;
+	GtkSpell *obj;
+	
+	for(int i = 0; i != convonotebook_->get_n_pages(); i++) {
+		vbox = (Gtk::VBox *) (convonotebook_->get_nth_page(i));
+		text_view_input = getTextViewInput(vbox);
+		obj = gtkspell_get_from_text_view(text_view_input->gobj());
+		
+		if (obj)
+			setGtkSpellDictionary(obj,
+					      app_ptr_->getConfig()->getConfigOptions()->getSpellingDictionary());
+	}
+}
+
 void ConvoWin::onVScrollValueChange(Gtk::ScrolledWindow *scrolled_win) {
 	scrolled_win->get_vscrollbar()->set_value(scrolled_win->get_vscrollbar()->get_adjustment()->get_upper());
 }
@@ -685,7 +745,11 @@ void ConvoWin::closeTab(Gtk::VBox *notebook_vbox) {
 	Gtk::EventBox *entry_eb = dynamic_cast<Gtk::EventBox*>((++wi4)->get_widget());
 	Gtk::Alignment *entry_alignment = dynamic_cast<Gtk::Alignment*>(entry_eb->get_child());
 	Gtk::Button *entry_btn = dynamic_cast<Gtk::Button*>(entry_alignment->get_child());
-			
+	
+	GtkSpell *spelling_obj = gtkspell_get_from_text_view(text_view_input->gobj());
+	if (spelling_obj)
+		gtkspell_detach(spelling_obj);
+	
 	delete text_view_input;
 	delete entry_btn;
 	delete entry_alignment;

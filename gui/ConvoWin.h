@@ -8,6 +8,7 @@
 #include <libglademm/xml.h>
 #include <gtkmm.h>
 
+#include "../GtkSpellProxy.h"
 #include "../backend/FireClient.h"
 #include "../backend/BackendEvents.h"
 
@@ -25,6 +26,8 @@ class ConvoWin : public Gtk::Window {
 		void gotMessage(Gtk::TreeIter &iter, Glib::ustring message);
 		void updatePage(Gtk::TreeModel::Row childrow);
 		void updateTextViewInputStyle();
+		void updateTextViewInputGtkSpell(int detach);
+		void updateTextViewInputGtkSpellDictionary();
 	private:
 		//Glib::ustring offline_msg = "The user is currently offline";
 		void updateTextViewInputStyle(Glib::RefPtr<Gtk::TextBuffer> buffer, Gtk::ToggleButton *apply_btn);
@@ -55,6 +58,8 @@ class ConvoWin : public Gtk::Window {
 		Gtk::Label *getLabelNick(Gtk::VBox *vbox);
 		Gtk::Label *getLabel(Gtk::VBox *vbox);
 		Gtk::ToggleButton *getApplyBtn(Gtk::VBox *vbox);
+		void attachGtkSpellToTextView(Gtk::TextView *view);
+		void setGtkSpellDictionary(GtkSpell *spell, Glib::ustring lang);
 		
 		Gtk::Window *convowin_;
 		Glib::RefPtr<Gnome::Glade::Xml> refXml_;

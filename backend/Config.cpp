@@ -64,6 +64,10 @@ void Config::loadConfigOptions() {
 		config_options_->setLogNickChange(getOption(tmp));
 		tmp = "LBN";
 		config_options_->setLogBuddyNickChange(getOption(tmp));
+		tmp = "SC";
+		config_options_->setSpellChecking(getOption(tmp));
+		tmp = "SD";
+		config_options_->setSpellingDictionary(getOption(tmp));
 	}
 }
 

@@ -15,7 +15,7 @@ class PreferencesWin {
 		void hide() { preferenceswin_->hide(); }
 		void show() { setOptionsFromConfig(); preferenceswin_->show(); }
 		void signalFontBtnClicked() { pfontbtn_->clicked(); }
-		void signalColorBtnClicked() { pfontbtn_->clicked(); }
+		void signalColorBtnClicked() { pcolorbtn_->clicked(); }
 		void setOptionsFromConfig();
 	private:
 		bool onDeleteEvent(GdkEventAny *e);
@@ -41,6 +41,9 @@ class PreferencesWin {
 		void onLogInviteSendCBToggled();
 		void onLogInviteReceiveCBToggled();
 		void onLogStatusChangeCBToggled();
+		void onSpellCheckingCBToggled();
+		void onSpellingDictionaryCBChanged();
+		void onEntryChanged();
 		
 		Application *app_ptr_;
 		Gtk::Notebook *pnotebook_;
@@ -68,6 +71,8 @@ class PreferencesWin {
 		Gtk::CheckButton *ploginvitesendcb_;
 		Gtk::CheckButton *ploginvitereceivedcb_;
 		Gtk::CheckButton *plogstatuschangecb_;
+		Gtk::CheckButton *pspellcheckingcb_;
+		Gtk::Entry *pspellingdictionaryentry_;
 };
 
 #endif

@@ -83,6 +83,12 @@ PreferencesWin::PreferencesWin(Glib::RefPtr<Gnome::Glade::Xml> refXml, Applicati
 	refXml->get_widget("PLogStatusChangeCB", plogstatuschangecb_);
 	if (!plogstatuschangecb_)
 		throw std::runtime_error("Couldn't find PLogStatusChangeCB");
+	refXml->get_widget("PSpellCheckingCB", pspellcheckingcb_);
+	if (!pspellcheckingcb_)
+		throw std::runtime_error("Couldn't find PSpellCheckingCB");
+	refXml->get_widget("PSpellingDictionaryEntry", pspellingdictionaryentry_);
+	if (!pspellingdictionaryentry_)
+		throw std::runtime_error("Couldn't find PSpellingDictionaryEntry");
 	
 	preferenceswin_->signal_delete_event().connect(sigc::mem_fun(*this, &PreferencesWin::onDeleteEvent));
 	pokbtn_->signal_clicked().connect(sigc::mem_fun(*this, &PreferencesWin::onPOKBtnClicked));
@@ -116,6 +122,10 @@ PreferencesWin::PreferencesWin(Glib::RefPtr<Gnome::Glade::Xml> refXml, Applicati
 					     sigc::mem_fun(*this, &PreferencesWin::onLogInviteReceiveCBToggled));
 	plogstatuschangecb_->signal_toggled().connect(
 					     sigc::mem_fun(*this, &PreferencesWin::onLogStatusChangeCBToggled));
+	pspellcheckingcb_->signal_toggled().connect(
+					    sigc::mem_fun(*this, &PreferencesWin::onSpellCheckingCBToggled));
+	//pspellingdictionaryentry_->signal_changed().connect(
+	//				    sigc::mem_fun(*this, &PreferencesWin::onSpellingDictionaryEntryChanged));
 }
 
 PreferencesWin::~PreferencesWin() {
@@ -152,20 +162,25 @@ void PreferencesWin::setOptionsFromConfig() {
 	ploginvitesendcb_->set_active(intify(app_ptr_->getConfig()->getConfigOptions()->getLogInviteSend()));
 	ploginvitereceivedcb_->set_active(intify(app_ptr_->getConfig()->getConfigOptions()->getLogInviteReceive()));
 	plogstatuschangecb_->set_active(intify(app_ptr_->getConfig()->getConfigOptions()->getLogStatusChange()));
+	pspellcheckingcb_->set_active(intify(app_ptr_->getConfig()->getConfigOptions()->getSpellChecking()));
+	pspellingdictionaryentry_->set_text(app_ptr_->getConfig()->getConfigOptions()->getSpellingDictionary());
 }
 
-void PreferencesWin::onPOKBtnClicked() {
+void PreferencesWin::onEntryChanged() {
 	onNicknameEntryChanged();
 	onUserDirectoryEntryChanged();
 	onLoggingDirectoryEntryChanged();
+	onSpellingDictionaryEntryChanged();
+}
+
+void PreferencesWin::onPOKBtnClicked() {
+	onEntryChanged();
 	app_ptr_->getConfig()->getConfigOptions()->syncConfigFromConfigOptions();
 	preferenceswin_->hide();
 }
 
 void PreferencesWin::onPApplyBtnClicked() {
-	onNicknameEntryChanged();
-	onUserDirectoryEntryChanged();
-	onLoggingDirectoryEntryChanged();
+	onEntryChanged();
 	app_ptr_->getConfig()->getConfigOptions()->syncConfigFromConfigOptions();
 }
 
@@ -192,6 +207,8 @@ void PreferencesWin::onEnableStyleCBToggled() {
 	app_ptr_->getConfig()->getConfigOptions()->setEnableStyle(stringify(penablestylecb_->get_active()), 0);
 	pfontbtn_->set_sensitive(penablestylecb_->get_active());
 	pcolorbtn_->set_sensitive(penablestylecb_->get_active());
+	if (app_ptr_->getConvoWin())
+		app_ptr_->getConvoWin()->updateTextViewInputStyle();
 }
 
 void PreferencesWin::onFontBtnFontSet() {
@@ -264,3 +281,16 @@ void PreferencesWin::onLogInviteReceiveCBToggled() {
 void PreferencesWin::onLogStatusChangeCBToggled() {
 	app_ptr_->getConfig()->getConfigOptions()->setLogStatusChange(stringify(plogstatuschangecb_->get_active()), 0);
 }
+
+void PreferencesWin::onSpellCheckingCBToggled() {
+	app_ptr_->getConfig()->getConfigOptions()->setSpellChecking(stringify(pspellcheckingcb_->get_active()), 0);
+	pspellingdictionaryentry_->set_sensitive(pspellcheckingcb_->get_active());
+	if (app_ptr_->getConvoWin())
+		app_ptr_->getConvoWin()->updateTextViewInputGtkSpell(!pspellcheckingcb_->get_active());
+}
+
+void PreferencesWin::onSpellingDictionaryEntryChanged() {
+	app_ptr_->getConfig()->getConfigOptions()->setSpellingDictionary(pspellcheckingentry_->get_text(), 0);
+	app_ptr_->getConvoWin()->updateTextViewInputGtkSpellDictionary();
+}
+
