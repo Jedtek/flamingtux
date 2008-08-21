@@ -40,7 +40,7 @@ class ConvoWin : public Gtk::Window {
 		void onWindowStateEvent(GdkEventWindowState* event);
 		void onPageRemoved(Gtk::Widget* page, guint page_num);
 		void onPageSwitched(GtkNotebookPage* page, guint page_num);
-		void onSendButtonPressed(Gtk::VBox *vbox, Gtk::TreeModel::iterator &iter);
+		void onSendButtonClicked(Gtk::VBox *vbox, Gtk::TreeModel::iterator &iter);
 		void updateTextView(Gtk::TextView *text_view, Glib::ustring nickname, Glib::ustring text);
 		void onVScrollValueChange(Gtk::ScrolledWindow *scrolled_win);
 		void onTextBufferInputChanged(Glib::RefPtr<Gtk::TextBuffer> buffer, Gtk::ToggleButton *apply_btn);

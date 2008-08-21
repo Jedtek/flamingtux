@@ -59,7 +59,7 @@ class ConvoWin : public Gtk::Window {
 		Gtk::Label *getLabel(Gtk::VBox *vbox);
 		Gtk::ToggleButton *getApplyBtn(Gtk::VBox *vbox);
 		void attachGtkSpellToTextView(Gtk::TextView *view);
-		void setGtkSpellDictionary(GtkSpell *spell, Glib::ustring lang)
+		void setGtkSpellDictionary(GtkSpell *spell, Glib::ustring lang);
 		
 		Gtk::Window *convowin_;
 		Glib::RefPtr<Gnome::Glade::Xml> refXml_;
