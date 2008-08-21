@@ -47,6 +47,10 @@ class ConfigOptions {
 		Glib::ustring getLogInviteReceive() { return lir_; }
 		int setLogNickChange(Glib::ustring lnc, int save = 1);
 		Glib::ustring getLogNickChange() { return lnc_; }
+		int setSpellChecking(Glib::ustring sc, int save = 1);
+		Glib::ustring getSpellChecking() { return sc_; }
+		int setSpellingDictionary(Glib::ustring sd, int save = 1);
+		Glib::ustring getSpellingDictionary() { return sd_; }
 		int setAllToDefaults();
 		void syncConfigFromConfigOptions();
 		void syncConfigOptionsFromConfig();
@@ -71,6 +75,8 @@ class ConfigOptions {
 		Glib::ustring lir_;
 		Glib::ustring lnc_;
 		Glib::ustring es_;
+		Glib::ustring sc_;
+		Glib::ustring sd_;
 };
 
 #endif
