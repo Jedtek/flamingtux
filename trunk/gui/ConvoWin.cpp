@@ -277,12 +277,12 @@ Gtk::Notebook_Helpers::PageIterator ConvoWin::appendPage(Gtk::TreeModel::iterato
 	text_view->set_cursor_visible(false);
 	
 	/* add the button signal */
-	entry_btn->add_accelerator("activate", convowin_->get_accel_group(), GDK_Return, 
+	entry_btn->add_accelerator("clicked", convowin_->get_accel_group(), GDK_Return, 
 				   (Gdk::ModifierType) 0, Gtk::ACCEL_VISIBLE);
 	entry_btn->signal_clicked().connect(sigc::bind(sigc::mem_fun(*this, &ConvoWin::onSendButtonClicked),
 				   notebook_vbox, iter));
-	entry_btn->signal_activate().connect(sigc::bind(sigc::mem_fun(*this, &ConvoWin::onSendButtonClicked),
-				    notebook_vbox, iter));
+	//entry_btn->signal_activate().connect(sigc::bind(sigc::mem_fun(*this, &ConvoWin::onSendButtonClicked),
+	//			    notebook_vbox, iter));
 	font_btn->signal_clicked().connect(sigc::mem_fun(*this, &ConvoWin::onFontBtnClicked));
 	color_btn->signal_clicked().connect(sigc::mem_fun(*this, &ConvoWin::onColorBtnClicked));
 	underline_btn->signal_clicked().connect(sigc::bind(sigc::mem_fun(*this, &ConvoWin::onUnderlineBtnClicked),
