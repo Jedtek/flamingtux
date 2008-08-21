@@ -279,9 +279,9 @@ Gtk::Notebook_Helpers::PageIterator ConvoWin::appendPage(Gtk::TreeModel::iterato
 	/* add the button signal */
 	entry_btn->add_accelerator("activate", convowin_->get_accel_group(), GDK_Return, 
 				   (Gdk::ModifierType) 0, Gtk::ACCEL_VISIBLE);
-	entry_btn->signal_pressed().connect(sigc::bind(sigc::mem_fun(*this, &ConvoWin::onSendButtonPressed),
+	entry_btn->signal_clicked().connect(sigc::bind(sigc::mem_fun(*this, &ConvoWin::onSendButtonClicked),
 				   notebook_vbox, iter));
-	entry_btn->signal_activate().connect(sigc::bind(sigc::mem_fun(*this, &ConvoWin::onSendButtonPressed),
+	entry_btn->signal_activate().connect(sigc::bind(sigc::mem_fun(*this, &ConvoWin::onSendButtonClicked),
 				    notebook_vbox, iter));
 	font_btn->signal_clicked().connect(sigc::mem_fun(*this, &ConvoWin::onFontBtnClicked));
 	color_btn->signal_clicked().connect(sigc::mem_fun(*this, &ConvoWin::onColorBtnClicked));
@@ -445,7 +445,7 @@ Gtk::Label *ConvoWin::getLabel(Gtk::VBox *vbox) {
 	return label;
 }
 
-void ConvoWin::onSendButtonPressed(Gtk::VBox *vbox, Gtk::TreeModel::iterator &iter) {
+void ConvoWin::onSendButtonClicked(Gtk::VBox *vbox, Gtk::TreeModel::iterator &iter) {
 	ModelColumns m_Columns;
 	
 	Gtk::Label *label_id = getLabelId(vbox);
