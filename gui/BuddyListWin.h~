@@ -33,7 +33,8 @@ class BuddyListWin : public Gtk::Window {
 		bool onQueryTooltip(int x, int y, bool keyboard_tooltip, const Glib::RefPtr<Gtk::Tooltip>& tooltip);
 		Gtk::TreeIter &get_iter_at_username(Glib::ustring username);
 		void changeNick(Glib::ustring nick);
-		void getPreferencesWin() { return preferenceswin_; }
+		PreferencesWin *getPreferencesWin() { return preferenceswin_; }
+		Glib::RefPtr<Gtk::StatusIcon> getSystray() { return systray_; }
 	private:
 		void onInviteBtnClicked();
 		void onInviteMenuItemActivate();
@@ -72,7 +73,11 @@ class BuddyListWin : public Gtk::Window {
 		
 		Application *app_ptr_;
 		FireClient *client_;
-		
+
+		Glib::RefPtr<Gtk::StatusIcon> systray_; /* oh so sexy */
+		int is_totray;
+
+
 		Gtk::Menu m_Menu_Popup;
 		virtual void onPopupMenuButtonPressed(GdkEventButton *event);
 		virtual void onPopupMenuSendMessageClicked();

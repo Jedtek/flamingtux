@@ -281,8 +281,8 @@ Gtk::Notebook_Helpers::PageIterator ConvoWin::appendPage(Gtk::TreeModel::iterato
 				   (Gdk::ModifierType) 0, Gtk::ACCEL_VISIBLE);
 	entry_btn->signal_clicked().connect(sigc::bind(sigc::mem_fun(*this, &ConvoWin::onSendButtonClicked),
 				   notebook_vbox, iter));
-	entry_btn->signal_activate().connect(sigc::bind(sigc::mem_fun(*this, &ConvoWin::onSendButtonClicked),
-				    notebook_vbox, iter));
+	//entry_btn->signal_activate().connect(sigc::bind(sigc::mem_fun(*this, &ConvoWin::onSendButtonClicked),
+	//			    notebook_vbox, iter));
 	font_btn->signal_clicked().connect(sigc::mem_fun(*this, &ConvoWin::onFontBtnClicked));
 	color_btn->signal_clicked().connect(sigc::mem_fun(*this, &ConvoWin::onColorBtnClicked));
 	underline_btn->signal_clicked().connect(sigc::bind(sigc::mem_fun(*this, &ConvoWin::onUnderlineBtnClicked),
@@ -705,9 +705,11 @@ void ConvoWin::gotMessage(Gtk::TreeIter &iter, Glib::ustring message) {
 		Gtk::Label *label = dynamic_cast<Gtk::Label *>((hbox->children().begin())->get_widget());
 		label->set_markup("<b><span color='Red'>" + label->get_text() + "</span></b>");
 		convowin_->set_urgency_hint(true);
+		app_ptr_->getBuddyListWin()->getSystray()->set_blinking(true);
 	}
 	if (windowMinimized) {
 		convowin_->set_urgency_hint(true);
+		app_ptr_->getBuddyListWin()->getSystray()->set_blinking(true);
 	}
 }
 

@@ -64,6 +64,7 @@ void ConvoWin::onWindowStateEvent(GdkEventWindowState* event) {
 	else {
 		windowMinimized = 0;
 		convowin_->set_urgency_hint(false);
+		app_ptr_->getBuddyListWin()->getSystray()->set_blinking(false);
 	}
 }
 
@@ -705,9 +706,11 @@ void ConvoWin::gotMessage(Gtk::TreeIter &iter, Glib::ustring message) {
 		Gtk::Label *label = dynamic_cast<Gtk::Label *>((hbox->children().begin())->get_widget());
 		label->set_markup("<b><span color='Red'>" + label->get_text() + "</span></b>");
 		convowin_->set_urgency_hint(true);
+		app_ptr_->getBuddyListWin()->getSystray()->set_blinking(true);
 	}
 	if (windowMinimized) {
 		convowin_->set_urgency_hint(true);
+		app_ptr_->getBuddyListWin()->getSystray()->set_blinking(true);
 	}
 }
 
