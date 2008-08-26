@@ -1,0 +1,17 @@
+SHELL=/bin/sh
+
+CHMOD = chmod
+ARFLAGS = cr
+CD = cd
+MKDIR = mkdir -p
+RMDIR = rmdir
+MV = mv
+RM = rm -f
+
+RANLIB = @RANLIB@
+
+prefix        = @prefix@
+exec_prefix   = $(prefix)
+bindir        = $(prefix)/bin
+libdir        = $(prefix)/lib
+
