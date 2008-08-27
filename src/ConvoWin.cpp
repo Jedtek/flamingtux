@@ -503,9 +503,9 @@ void ConvoWin::onSendButtonClicked(Gtk::VBox *vbox, Gtk::TreeModel::iterator &it
 						 getApplyBtn(vbox)->get_active()) {
 				
 				text = parseMarkup(text);
-				Glib::ustring span_tmp("<span font_desc='" + app_ptr_->getConfig()->getConfigOptions()->getFont() + "'><span foreground='" + app_ptr_->getConfig()->getConfigOptions()->getColor() + "'>");
+				Glib::ustring span_tmp("<span font_desc='" + app_ptr_->getConfig()->getConfigOptions()->getFont() + "' foreground='" + app_ptr_->getConfig()->getConfigOptions()->getColor() + "'>");
 				text.insert(0, span_tmp);
-				text.append("</span></span>");
+				text.append("</span>");
 				if (refTagMatch->property_underline_set()) {
 					text.insert(0, "<u>");
 					text.append("</u>");
@@ -549,6 +549,8 @@ void ConvoWin::updateTextView(Gtk::TextView *text_view, Glib::ustring nickname, 
 	
 	Glib::ustring nickname_copy = nickname;
 	nickname_copy = parseMarkup(nickname_copy);
+	text = parseMarkup(text);
+	cout << "LALALALA IS " << text << endl;
 	//BuddyListEntry *buddy_entry = client_->getClient()->getBuddyList->getBuddyById(intify(label_id->get_text()))
 	refBuffer->insert_with_tag(refBuffer->end(), '\n' + buffer_copy + ' ', "fforeground");
 	gtkTextBufferInsertMarkupWithTag(refBuffer, refBuffer->end(), nickname_copy, "fforeground");
@@ -815,6 +817,6 @@ void ConvoWin::closeTab(Gtk::VBox *notebook_vbox) {
 // 	delete label;
 // 	delete label_nick;
 // 	delete label_id;
- 	delete notebook_vbox;
+//	delete notebook_vbox;
 }
 

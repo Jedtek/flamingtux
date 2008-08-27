@@ -70,7 +70,7 @@ void Application::createNewLoginWin() {
 	client_ = new FireClient(this);
 	client_->initSetup();
 	loginWindow = new LoginWin(refXml_, this, client_);
-	loginWindow->get_window().present();
+	loginWindow->get_window().show();
 }
 
 void Application::createBuddyListWin() {
@@ -139,10 +139,10 @@ void Application::quit() {
 		delete buddyListWindow;
 		buddyListWindow = 0;
 	}
-	/*if (convoWindow) {
+	if (convoWindow) {
 		delete convoWindow;
 		convoWindow = 0;	
-	}*/
+	}
  	if (client_) {
  		delete client_;
 		client_ = 0;
