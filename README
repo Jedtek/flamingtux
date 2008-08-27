@@ -1,0 +1,7 @@
+FlamingTux 0.2:
+
+To install:
+
+./configure --prefix=(Your prefix)
+make
+make install (as root)

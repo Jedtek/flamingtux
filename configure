@@ -17908,7 +17908,7 @@ $as_echo "yes" >&6; }
 	:
 fi
 
-ac_config_files="$ac_config_files Makefile src/Makefile src/Application.cpp src/BuddyListWin.h Makefile.common"
+ac_config_files="$ac_config_files Makefile src/Makefile src/Application.cpp src/Application.h src/BuddyListWin.h Makefile.common"
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
@@ -18902,6 +18902,7 @@ do
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
     "src/Makefile") CONFIG_FILES="$CONFIG_FILES src/Makefile" ;;
     "src/Application.cpp") CONFIG_FILES="$CONFIG_FILES src/Application.cpp" ;;
+    "src/Application.h") CONFIG_FILES="$CONFIG_FILES src/Application.h" ;;
     "src/BuddyListWin.h") CONFIG_FILES="$CONFIG_FILES src/BuddyListWin.h" ;;
     "Makefile.common") CONFIG_FILES="$CONFIG_FILES Makefile.common" ;;
 

@@ -550,7 +550,6 @@ void ConvoWin::updateTextView(Gtk::TextView *text_view, Glib::ustring nickname, 
 	Glib::ustring nickname_copy = nickname;
 	nickname_copy = parseMarkup(nickname_copy);
 	text = parseMarkup(text);
-	cout << "LALALALA IS " << text << endl;
 	//BuddyListEntry *buddy_entry = client_->getClient()->getBuddyList->getBuddyById(intify(label_id->get_text()))
 	refBuffer->insert_with_tag(refBuffer->end(), '\n' + buffer_copy + ' ', "fforeground");
 	gtkTextBufferInsertMarkupWithTag(refBuffer, refBuffer->end(), nickname_copy, "fforeground");
