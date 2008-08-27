@@ -394,23 +394,22 @@ bool BuddyListWin::onDeleteEvent(GdkEventAny *e) {
 }
 
 void BuddyListWin::onCloseDialogResponseSignal(int response_id, Gtk::MessageDialog *dialog) {
+	if (response_id != Gtk::RESPONSE_YES) {
 		switch(response_id) {
-		case(Gtk::RESPONSE_YES): {
-			int i;
-			client_->getClient()->disconnect();
-			app_ptr_->deleteCreatedClasses();
-			app_ptr_->quit();
-			//return false;
-			break;
+			case(Gtk::RESPONSE_NONE):
+			case(Gtk::RESPONSE_NO): {
+				/* Do nothing and return true */
+				//return true;
+				dialog->hide();
+				delete dialog;
+				break;
+			}
 		}
-		case(Gtk::RESPONSE_NONE):
-		case(Gtk::RESPONSE_NO): {
-			/* Do nothing and return true */
-			//return true;
-			dialog->hide();
-			delete dialog;
-			break;
-		}
+	}
+	else {
+		client_->getClient()->disconnect();
+		app_ptr_->deleteCreatedClasses();
+		app_ptr_->quit();
 	}
 }
 
@@ -419,6 +418,7 @@ void BuddyListWin::createTreeModel() {
 	buddyview_->set_model(buddystore_);
 	buddyview_->set_has_tooltip();
 	buddyview_->signal_query_tooltip().connect(sigc::mem_fun(*this, &BuddyListWin::onQueryTooltip));
+	buddyview_->set_rules_hint(true);
 	
 	Gtk::CellRendererText& nickname_renderer = *manage (new Gtk::CellRendererText());
 	Gtk::TreeViewColumn& nickname_column = *manage (new Gtk::TreeViewColumn ("Nickname", nickname_renderer));
@@ -436,7 +436,7 @@ void BuddyListWin::createTreeModel() {
 	buddyview_->signal_key_press_event().connect_notify(
 					      sigc::mem_fun(*this, &BuddyListWin::on_treeview_keyed));
 	//buddyview_->set_reorderable();
-	
+			
 	// Fill the TreeView's model
 // 	online_row = *(buddystore_->append());
 // 	online_row[m_Columns.m_col_name] = "Online";

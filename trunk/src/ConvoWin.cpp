@@ -52,7 +52,11 @@ ConvoWin::ConvoWin(Glib::RefPtr<Gnome::Glade::Xml> refXml, Application *app, Fir
 }
 
 ConvoWin::~ConvoWin() {
-	
+	if (convowin_) {
+		convowin_->hide();
+		delete convowin_;
+		convowin_ = 0;
+	}
 }
 
 void ConvoWin::onCloseMenuItem() {
@@ -162,30 +166,30 @@ Gtk::Notebook_Helpers::PageIterator ConvoWin::appendPage(Gtk::TreeModel::iterato
 		convowin_->raise();
 	
 	/* create the new child widget */
-	Gtk::EventBox *scrolled_win_eb = new Gtk::EventBox();
-	scrolled_win_eb->modify_bg(Gtk::STATE_NORMAL, Gdk::Color("dark grey"));
-	Gtk::EventBox *entry_hbox_eb = new Gtk::EventBox();
-	entry_hbox_eb->modify_bg(Gtk::STATE_NORMAL, Gdk::Color("dark grey"));
 	Gtk::VBox *notebook_vbox = new Gtk::VBox();
-	Gtk::HBox *entry_hbox = new Gtk::HBox();
+	Gtk::HBox *entry_hbox = Gtk::manage(new Gtk::HBox());
+	Gtk::EventBox *scrolled_win_eb = Gtk::manage(new Gtk::EventBox());
+	scrolled_win_eb->modify_bg(Gtk::STATE_NORMAL, Gdk::Color("dark grey"));
+	Gtk::EventBox *entry_hbox_eb = Gtk::manage(new Gtk::EventBox());
+	entry_hbox_eb->modify_bg(Gtk::STATE_NORMAL, Gdk::Color("dark grey"));
 	entry_hbox_eb->add(*entry_hbox);
 	entry_hbox->set_border_width(1);
-	Gtk::Button *entry_btn = new Gtk::Button("Send");
-	Gtk::Label *label = new Gtk::Label();
+	Gtk::Button *entry_btn = Gtk::manage(new Gtk::Button("Send"));
+	Gtk::Label *label = Gtk::manage(new Gtk::Label());
 	Glib::ustring nickname_copy((*iter)[m_Columns.m_col_nickname]);
 	nickname_copy = parseMarkup(nickname_copy);
 	label->set_markup("To: " + nickname_copy + " &lt;" + (*iter)[m_Columns.m_col_status] + "&gt;");
-	Gtk::Label *label_id = new Gtk::Label();
-	Gtk::Label *label_nick = new Gtk::Label((*iter)[m_Columns.m_col_nickname]);
+	Gtk::Label *label_id = Gtk::manage(new Gtk::Label());
+	Gtk::Label *label_nick = Gtk::manage(new Gtk::Label((*iter)[m_Columns.m_col_nickname]));
 	label_id->set_label(stringify((*iter)[m_Columns.m_col_id]));
-	Gtk::ScrolledWindow *scrolled_win = new Gtk::ScrolledWindow();
+	Gtk::ScrolledWindow *scrolled_win = Gtk::manage(new Gtk::ScrolledWindow());
 	scrolled_win_eb->add(*scrolled_win);
 	scrolled_win->set_border_width(1);
-	Gtk::ScrolledWindow *scrolled_win2 = new Gtk::ScrolledWindow();
+	Gtk::ScrolledWindow *scrolled_win2 = Gtk::manage(new Gtk::ScrolledWindow());
 	//scrolled_win2->set_border_width(1);
-	Gtk::TextView *text_view = new Gtk::TextView();
+	Gtk::TextView *text_view = Gtk::manage(new Gtk::TextView());
 	text_view->set_editable(false);
-	Gtk::TextView *text_view2 = new Gtk::TextView();
+	Gtk::TextView *text_view2 = Gtk::manage(new Gtk::TextView());
 	attachGtkSpellToTextView(text_view2);
 	
 	Glib::RefPtr<Gtk::TextBuffer::Tag> refTagMatch = text_view2->get_buffer()->create_tag("inputtag");
@@ -757,61 +761,60 @@ void ConvoWin::onCloseTabClicked(Gtk::VBox *notebook_vbox) {
 
 void ConvoWin::closeTab(Gtk::VBox *notebook_vbox) {
 	
-	convonotebook_->remove_page(*notebook_vbox);
-		
-	Gtk::Box_Helpers::BoxList::iterator wi = notebook_vbox->children().begin();
-	Gtk::Label *label_id = dynamic_cast<Gtk::Label*>(wi->get_widget());
-	Gtk::Label *label_nick = dynamic_cast<Gtk::Label*>((++wi)->get_widget());
-	Gtk::Label *label = dynamic_cast<Gtk::Label*>((++wi)->get_widget());
-	Gtk::VPaned *vpaned = dynamic_cast<Gtk::VPaned*>((++wi)->get_widget());
-	Gtk::EventBox *scrolled_win_eb = dynamic_cast<Gtk::EventBox*>(vpaned->get_child1());
-	Gtk::ScrolledWindow *scrolled_win = dynamic_cast<Gtk::ScrolledWindow*>(scrolled_win_eb->get_child());
-	Gtk::TextView *text_view = dynamic_cast<Gtk::TextView*>(scrolled_win->get_child());
-	Gtk::VBox *entry_vbox = dynamic_cast<Gtk::VBox*>(vpaned->get_child2());
-	Gtk::Box_Helpers::BoxList::iterator wi2 = entry_vbox->children().begin();
-	Gtk::HBox *buttons_hbox = dynamic_cast<Gtk::HBox*>(wi2->get_widget());
-	Gtk::Box_Helpers::BoxList::iterator wi3 = buttons_hbox->children().begin();
-	Gtk::Button *font_btn = dynamic_cast<Gtk::Button*>(wi3->get_widget());
-	Gtk::Button *color_btn = dynamic_cast<Gtk::Button*>((++wi3)->get_widget());
-	Gtk::ToggleButton *underline_btn = dynamic_cast<Gtk::ToggleButton*>((++wi3)->get_widget());
-	Gtk::ToggleButton *strikethrough_btn = dynamic_cast<Gtk::ToggleButton*>((++wi3)->get_widget());
-	Gtk::ToggleButton *apply_btn = dynamic_cast<Gtk::ToggleButton*>((++wi3)->get_widget());
-	Gtk::EventBox *entry_hbox_eb = dynamic_cast<Gtk::EventBox*>((++wi2)->get_widget());
-	Gtk::HBox *entry_hbox = dynamic_cast<Gtk::HBox*>(entry_hbox_eb->get_child());
-	Gtk::Box_Helpers::BoxList::iterator wi4 = entry_hbox->children().begin();
-	Gtk::ScrolledWindow *scrolled_win2 = 
-			dynamic_cast<Gtk::ScrolledWindow*>(wi4->get_widget());
-	Gtk::TextView *text_view_input = dynamic_cast<Gtk::TextView*>(*(scrolled_win2->get_children().begin()));
-	Gtk::EventBox *entry_eb = dynamic_cast<Gtk::EventBox*>((++wi4)->get_widget());
-	Gtk::Alignment *entry_alignment = dynamic_cast<Gtk::Alignment*>(entry_eb->get_child());
-	Gtk::Button *entry_btn = dynamic_cast<Gtk::Button*>(entry_alignment->get_child());
-	
-	GtkSpell *spelling_obj = gtkspell_get_from_text_view(text_view_input->gobj());
+	GtkSpell *spelling_obj = gtkspell_get_from_text_view(getTextViewInput(notebook_vbox)->gobj());
 	if (spelling_obj)
 		gtkspell_detach(spelling_obj);
 	
-	delete text_view_input;
-	delete entry_btn;
-	delete entry_alignment;
-	delete entry_eb;
-	delete scrolled_win2;
-	delete entry_hbox;
-	delete entry_hbox_eb;
-	delete font_btn;
-	delete color_btn;
-	delete underline_btn;
-	delete strikethrough_btn;
-	delete apply_btn;
-	delete buttons_hbox;
-	delete entry_vbox;
-	delete text_view;
-	delete scrolled_win;
-	delete scrolled_win_eb;
-	delete vpaned;
-	delete label;
-	delete label_nick;
-	delete label_id;
-	delete notebook_vbox;
+	convonotebook_->remove_page(*notebook_vbox);
+		
+// 	Gtk::Box_Helpers::BoxList::iterator wi = notebook_vbox->children().begin();
+// 	Gtk::Label *label_id = dynamic_cast<Gtk::Label*>(wi->get_widget());
+// 	Gtk::Label *label_nick = dynamic_cast<Gtk::Label*>((++wi)->get_widget());
+// 	Gtk::Label *label = dynamic_cast<Gtk::Label*>((++wi)->get_widget());
+// 	Gtk::VPaned *vpaned = dynamic_cast<Gtk::VPaned*>((++wi)->get_widget());
+// 	Gtk::EventBox *scrolled_win_eb = dynamic_cast<Gtk::EventBox*>(vpaned->get_child1());
+// 	Gtk::ScrolledWindow *scrolled_win = dynamic_cast<Gtk::ScrolledWindow*>(scrolled_win_eb->get_child());
+// 	Gtk::TextView *text_view = dynamic_cast<Gtk::TextView*>(scrolled_win->get_child());
+// 	Gtk::VBox *entry_vbox = dynamic_cast<Gtk::VBox*>(vpaned->get_child2());
+// 	Gtk::Box_Helpers::BoxList::iterator wi2 = entry_vbox->children().begin();
+// 	Gtk::HBox *buttons_hbox = dynamic_cast<Gtk::HBox*>(wi2->get_widget());
+// 	Gtk::Box_Helpers::BoxList::iterator wi3 = buttons_hbox->children().begin();
+// 	Gtk::Button *font_btn = dynamic_cast<Gtk::Button*>(wi3->get_widget());
+// 	Gtk::Button *color_btn = dynamic_cast<Gtk::Button*>((++wi3)->get_widget());
+// 	Gtk::ToggleButton *underline_btn = dynamic_cast<Gtk::ToggleButton*>((++wi3)->get_widget());
+// 	Gtk::ToggleButton *strikethrough_btn = dynamic_cast<Gtk::ToggleButton*>((++wi3)->get_widget());
+// 	Gtk::ToggleButton *apply_btn = dynamic_cast<Gtk::ToggleButton*>((++wi3)->get_widget());
+// 	Gtk::EventBox *entry_hbox_eb = dynamic_cast<Gtk::EventBox*>((++wi2)->get_widget());
+// 	Gtk::HBox *entry_hbox = dynamic_cast<Gtk::HBox*>(entry_hbox_eb->get_child());
+// 	Gtk::Box_Helpers::BoxList::iterator wi4 = entry_hbox->children().begin();
+// 	Gtk::ScrolledWindow *scrolled_win2 = 
+// 			dynamic_cast<Gtk::ScrolledWindow*>(wi4->get_widget());
+// 	Gtk::TextView *text_view_input = dynamic_cast<Gtk::TextView*>(*(scrolled_win2->get_children().begin()));
+// 	Gtk::EventBox *entry_eb = dynamic_cast<Gtk::EventBox*>((++wi4)->get_widget());
+// 	Gtk::Alignment *entry_alignment = dynamic_cast<Gtk::Alignment*>(entry_eb->get_child());
+// 	Gtk::Button *entry_btn = dynamic_cast<Gtk::Button*>(entry_alignment->get_child());
 	
+// 	delete text_view_input;
+// 	delete entry_btn;
+// 	delete entry_alignment;
+// 	delete entry_eb;
+// 	delete scrolled_win2;
+// 	delete entry_hbox;
+// 	delete entry_hbox_eb;
+// 	delete font_btn;
+// 	delete color_btn;
+// 	delete underline_btn;
+// 	delete strikethrough_btn;
+// 	delete apply_btn;
+// 	delete buttons_hbox;
+// 	delete entry_vbox;
+// 	delete text_view;
+// 	delete scrolled_win;
+// 	delete scrolled_win_eb;
+// 	delete vpaned;
+// 	delete label;
+// 	delete label_nick;
+// 	delete label_id;
+ 	delete notebook_vbox;
 }
 
