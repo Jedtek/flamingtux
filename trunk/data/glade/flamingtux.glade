@@ -138,7 +138,8 @@
   <widget class="GtkWindow" id="BuddyListWin">
     <property name="width_request">400</property>
     <property name="height_request">500</property>
-    <property name="title" translatable="yes">FlamingTux</property>
+    <property name="title" translatable="yes">FlamingTux - 
+Buddylist</property>
     <property name="default_width">300</property>
     <property name="default_height">500</property>
     <property name="icon">flamingtux_icon.png</property>
