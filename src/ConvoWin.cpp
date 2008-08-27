@@ -711,9 +711,6 @@ void ConvoWin::onVScrollValueChange(Gtk::ScrolledWindow *scrolled_win) {
 }
 
 void ConvoWin::gotMessage(Gtk::TreeIter &iter, Glib::ustring message) {
-	if (app_ptr_->getConfig()->getConfigOptions()->getEnableEventSounds() == "1")
-		playFile(app_ptr_->getConfig()->getConfigOptions()->getESCommand(), app_ptr_->getRMSoundFilePath());
-	
 	ModelColumns m_Columns;
 	//app_ptr_->getBuddyListWin()->get_iter_at_username(username);
 	/* check if a convo is already opened for the user */
@@ -740,6 +737,8 @@ void ConvoWin::gotMessage(Gtk::TreeIter &iter, Glib::ustring message) {
 	app_ptr_->getLog()->chatLog(buddy_entry->username, label_nick->get_text(), message);
 	
 	if (convonotebook_->get_current_page() != convonotebook_->page_num(*vbox)) {
+		if (app_ptr_->getConfig()->getConfigOptions()->getEnableEventSounds() == "1")
+			playFile(app_ptr_->getConfig()->getConfigOptions()->getESCommand(), app_ptr_->getRMSoundFilePath());
 		Gtk::HBox *hbox = (Gtk::HBox *) convonotebook_->get_tab_label(*vbox);	
 		Gtk::Label *label = dynamic_cast<Gtk::Label *>((hbox->children().begin())->get_widget());
 		if (!label->get_use_markup()) {
@@ -751,6 +750,8 @@ void ConvoWin::gotMessage(Gtk::TreeIter &iter, Glib::ustring message) {
 		}
 	}	
 	if (windowMinimized || !hasFocus) {
+		if (app_ptr_->getConfig()->getConfigOptions()->getEnableEventSounds() == "1")
+			playFile(app_ptr_->getConfig()->getConfigOptions()->getESCommand(), app_ptr_->getRMSoundFilePath());
 		convowin_->set_urgency_hint(true);
 		app_ptr_->getBuddyListWin()->getSystray()->set_blinking(true);
 	}
