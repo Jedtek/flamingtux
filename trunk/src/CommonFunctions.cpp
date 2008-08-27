@@ -52,12 +52,9 @@ Glib::ustring parseMarkup(Glib::ustring markup) {
 }
 
 void playFile(Glib::ustring command, Glib::ustring file) {
-	
 	if (checkFileExists(command) && checkFileExists(file)) {
 		std::string tmp = command + " " + file;
-		Glib::ArrayHandle<std::string> args = Glib::shell_parse_argv(tmp);
-		std::vector<std::string> envp;
-		Glib::spawn_async_with_pipes("", args, envp);	
+		Glib::spawn_command_line_async(tmp);	
 	}
 	else
 		cout << "Sound command or sound file does not exist." << endl;

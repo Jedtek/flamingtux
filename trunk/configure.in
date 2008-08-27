@@ -20,4 +20,4 @@ PKG_CHECK_MODULES([GTHREAD], [gthread-2.0 >= 2.14.0])
 PKG_CHECK_MODULES([LIBGLADEMM], [libglademm-2.4 >= 2.6.4])
 PKG_CHECK_MODULES([GTKSPELL], [gtkspell-2.0 >= 2.0.10])
 
-AC_OUTPUT(Makefile src/Makefile src/Application.cpp src/BuddyListWin.h Makefile.common)
+AC_OUTPUT(Makefile src/Makefile src/Application.cpp src/Application.h src/BuddyListWin.h Makefile.common)
