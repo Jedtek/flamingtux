@@ -140,6 +140,8 @@ void ConvoWin::onPageSwitched(GtkNotebookPage* page, guint page_num) {
 			app_ptr_->getBuddyListWin()->getSystray()->set_blinking(false);
 		}
 	}
+	Gtk::VBox *vbox = (Gtk::VBox *) (convonotebook_->get_nth_page(page_num));
+	getTextViewInput(vbox)->grab_focus();
 }
 
 Gtk::Notebook_Helpers::PageIterator ConvoWin::appendPage(Gtk::TreeModel::iterator &iter) {
