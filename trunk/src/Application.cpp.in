@@ -139,10 +139,10 @@ void Application::quit() {
 		delete buddyListWindow;
 		buddyListWindow = 0;
 	}
-	if (convoWindow) {
+	/*if (convoWindow) {
 		delete convoWindow;
 		convoWindow = 0;	
-	}
+	}*/
  	if (client_) {
  		delete client_;
 		client_ = 0;
